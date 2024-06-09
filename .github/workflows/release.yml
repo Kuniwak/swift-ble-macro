@@ -1,10 +1,10 @@
-name: Test
+name: Release
 on:
   push:
     tags: '*'
 
 jobs:
-  test:
+  release:
     runs-on: macos-latest 
 
     permissions:
@@ -29,7 +29,7 @@ jobs:
           restore-keys: |
             spm-
 
-      - name: Upload Artifacts
+      - name: Build
         run: |
           swift build
 
