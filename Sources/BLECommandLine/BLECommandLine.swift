@@ -6,7 +6,7 @@ struct BLECommandLine: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "ble",
         abstract: "Utility for Bluetooth Low Energy",
-        version: "0.0.0",
+        version: "1.0.0",
         subcommands: [
             PeripheralDiscovery.self,
             MacroValidation.self,
