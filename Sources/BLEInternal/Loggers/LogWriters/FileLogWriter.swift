@@ -1,7 +1,7 @@
 import Foundation
 
 
-public struct FileLogWriter: LogWriterProtocol {
+public class FileLogWriter: LogWriterProtocol {
     private let fileHandle: FileHandle
     private let encoding: String.Encoding
     
@@ -17,5 +17,6 @@ public struct FileLogWriter: LogWriterProtocol {
             return
         }
         try? fileHandle.write(contentsOf: data)
+        try? fileHandle.synchronize()
     }
 }

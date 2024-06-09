@@ -25,21 +25,24 @@ public protocol InterpreterProtocol {
 open class Interpreter: InterpreterProtocol {
     public private(set) var environment: Environment
     public let peripheral: any PeripheralProtocol
-    private var logger: any LoggerProtocol
+    private let logger: any LoggerProtocol
     private let timeout: TimeInterval = 5
+    private let readHandler: ((Data) -> Void)?
 
     
-    public init(startsWith environment: Environment, onPeripheral peripheral: any PeripheralProtocol, loggingBy logger: any LoggerProtocol) {
+    public init(startsWith environment: Environment, onPeripheral peripheral: any PeripheralProtocol, loggingBy logger: any LoggerProtocol, _ readHandler: ((Data) -> Void)? = nil) {
         self.environment = environment
         self.peripheral = peripheral
         self.logger = logger
+        self.readHandler = readHandler
     }
     
     
-    public init(onPeripheral peripheral: any PeripheralProtocol, loggingBy logger: any LoggerProtocol) {
+    public init(onPeripheral peripheral: any PeripheralProtocol, loggingBy logger: any LoggerProtocol, _ readHandler: ((Data) -> Void)? = nil) {
         self.environment = Environment(services: [:], register: nil)
         self.peripheral = peripheral
         self.logger = logger
+        self.readHandler = readHandler
     }
     
     
@@ -138,11 +141,11 @@ open class Interpreter: InterpreterProtocol {
         logger.trace()
         
         if let serviceEntry = environment.serviceEntries[cmd.serviceUUID] {
-            logger.debug("Service \(cmd.serviceUUID) already found")
+            logger.debug("service \(cmd.serviceUUID) already found")
             return .success(serviceEntry)
         }
         
-        logger.debug("Discovering service \(cmd.serviceUUID)")
+        logger.debug("discovering service \(cmd.serviceUUID)")
         let result = await Tasks.timeout(duration: timeout) {
             await self.waitService(uuid: cmd.serviceUUID)
         }
@@ -160,9 +163,9 @@ open class Interpreter: InterpreterProtocol {
     
     
     public func waitService(uuid: CBUUID) async -> Result<any ServiceProtocol, CommandExecutionFailure> {
+        let logger = self.logger
         logger.trace()
-        var logger = self.logger
-        
+
         return await withCheckedContinuation { continuation in
             var cancellables = Set<AnyCancellable>()
             peripheral.didDiscoverServices
@@ -170,18 +173,18 @@ open class Interpreter: InterpreterProtocol {
                     defer { cancellables.removeAll() }
                     
                     guard let services = resp.services else {
-                        logger.error("Failed to discover services: \(resp.error == nil ? "nil" : "\(resp.error!)")")
+                        logger.error("failed to discover services: \(resp.error == nil ? "nil" : "\(resp.error!)")")
                         continuation.resume(returning: .failure(.init(wrapping: resp.error)))
                         return
                     }
                     
                     guard let service = services.first(where: { $0.uuid == uuid }) else {
-                        logger.debug("Service \(uuid) not found")
+                        logger.debug("service \(uuid) not found")
                         continuation.resume(returning: .failure(.init(description: "Service \(uuid) not found")))
                         return
                     }
                     
-                    logger.debug("Service \(uuid) found")
+                    logger.debug("service \(uuid) found")
                     continuation.resume(returning: .success(service))
                 })
                 .store(in: &cancellables)
@@ -198,11 +201,11 @@ open class Interpreter: InterpreterProtocol {
             return .failure(error)
         case .success(let serviceEntry):
             if let characteristicEntry = serviceEntry.characteristics[cmd.characteristicUUID] {
-                logger.debug("Characteristic \(cmd.characteristicUUID) already found")
+                logger.debug("characteristic \(cmd.characteristicUUID) already found")
                 return .success((serviceEntry, characteristicEntry))
             }
             
-            logger.debug("Discovering characteristic \(cmd.characteristicUUID)")
+            logger.debug("discovering characteristic \(cmd.characteristicUUID)")
             
             let result = await Tasks.timeout(duration: timeout) {
                 await self.waitCharacteristic(for: cmd.characteristicUUID, with: serviceEntry.service)
@@ -224,8 +227,8 @@ open class Interpreter: InterpreterProtocol {
     
     
     public func waitCharacteristic(for uuid: CBUUID, with service: any ServiceProtocol) async -> Result<any CharacteristicProtocol, CommandExecutionFailure> {
+        let logger = self.logger
         logger.trace()
-        var logger = self.logger
         
         return await withCheckedContinuation { continuation in
             var subscription: AnyCancellable?
@@ -234,18 +237,18 @@ open class Interpreter: InterpreterProtocol {
                     defer { subscription?.cancel() }
                     
                     guard let characteristics = resp.characteristics else {
-                        logger.error("Failed to discover characteristics: \(resp.error == nil ? "nil" : "\(resp.error!)")")
+                        logger.error("failed to discover characteristics: \(resp.error == nil ? "nil" : "\(resp.error!)")")
                         continuation.resume(returning: .failure(.init(wrapping: resp.error)))
                         return
                     }
                     
                     guard let characteristic = characteristics.first(where: { $0.uuid == uuid }) else {
-                        logger.debug("Characteristic \(uuid) not found")
+                        logger.debug("characteristic \(uuid) not found")
                         continuation.resume(returning: .failure(.init(description: "Characteristic \(uuid) not found")))
                         return
                     }
                     
-                    logger.debug("Characteristic \(uuid) found")
+                    logger.debug("characteristic \(uuid) found")
                     continuation.resume(returning: .success(characteristic))
                 })
             peripheral.discoverCharacteristics([uuid], for: service)
@@ -298,18 +301,18 @@ open class Interpreter: InterpreterProtocol {
                     guard let self else { return }
 
                     guard let descriptors = resp.descriptors else {
-                        self.logger.error("Failed to discover descriptors: \(resp.error == nil ? "nil" : "\(resp.error!)")")
+                        self.logger.error("failed to discover descriptors: \(resp.error == nil ? "nil" : "\(resp.error!)")")
                         continuation.resume(returning: .failure(.init(wrapping: resp.error)))
                         return
                     }
                     
                     guard let descriptor = descriptors.first(where: { $0.uuid == uuid }) else {
-                        self.logger.debug("Descriptor \(uuid) not found")
+                        self.logger.debug("descriptor \(uuid) not found")
                         continuation.resume(returning: .failure(.init(description: "Descriptor \(uuid) not found")))
                         return
                     }
                     
-                    self.logger.debug("Descriptor \(uuid) found")
+                    self.logger.debug("descriptor \(uuid) found")
                     continuation.resume(returning: .success(descriptor))
                 })
                 .store(in: &cancellables)
@@ -353,12 +356,12 @@ open class Interpreter: InterpreterProtocol {
                             guard let self else { return }
                             
                             if let error = resp.error {
-                                self.logger.error("Failed to write value: \(error)")
+                                self.logger.error("failed to write value: \(error)")
                                 continuation.resume(returning: .failure(.init(wrapping: error)))
                                 return
                             }
                             
-                            self.logger.debug("Value written \(HexEncoding.upper.encode(data: cmd.value))")
+                            self.logger.debug("value written \(HexEncoding.upper.encode(data: cmd.value))")
                             continuation.resume(returning: .success(()))
                         })
                         .store(in: &cancellables)
@@ -367,7 +370,7 @@ open class Interpreter: InterpreterProtocol {
                     peripheral.writeValue(cmd.value, for: characteristicEntry.characteristic, type: .withoutResponse)
                     continuation.resume(returning: .success(()))
                 default:
-                    continuation.resume(returning: .failure(.init(description: "Unsupported write type: \(cmd.writeType)")))
+                    continuation.resume(returning: .failure(.init(description: "unsupported write type: \(cmd.writeType)")))
                 }
             }
         }
@@ -402,7 +405,7 @@ open class Interpreter: InterpreterProtocol {
                         guard let self else { return }
                         
                         if let error = resp.error {
-                            self.logger.error("Failed to update value: \(error)")
+                            self.logger.error("failed to update value: \(error)")
                             continuation.resume(returning: .failure(.init(wrapping: error)))
                             return
                         }
@@ -415,6 +418,7 @@ open class Interpreter: InterpreterProtocol {
 
                         self.logger.debug("received: \(HexEncoding.upper.encode(data: value))")
                         self.environment.register = .value(value)
+                        self.readHandler?(value)
                         continuation.resume(returning: .success(value))
                     })
                     .store(in: &cancellables)
@@ -428,13 +432,13 @@ open class Interpreter: InterpreterProtocol {
         logger.trace()
         
         guard let register = environment.register else {
-            return .failure(.init(description: "No value in register"))
+            return .failure(.init(description: "no value in register"))
         }
         
         switch register {
         case .value(let data):
             guard cmd.value == data else {
-                return .failure(.init(description: "Value mismatch. Want \(HexEncoding.upper.encode(data: cmd.value)), but got \(HexEncoding.upper.encode(data: data))"))
+                return .failure(.init(description: "value mismatch. Want \(HexEncoding.upper.encode(data: cmd.value)), but got \(HexEncoding.upper.encode(data: data))"))
             }
             return .success(())
         }
@@ -469,7 +473,7 @@ open class Interpreter: InterpreterProtocol {
                         guard let self else { return }
                         
                         if let error = resp.error {
-                            self.logger.error("Failed to update value: \(error)")
+                            self.logger.error("failed to update value: \(error)")
                             continuation.resume(returning: .failure(.init(wrapping: error)))
                             return
                         }

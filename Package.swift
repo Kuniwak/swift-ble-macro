@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "BluetoothLEMacroKit",
+    name: "swift-ble-macro",
     platforms: [
         .iOS(.v12),
         .macOS(.v14),
@@ -17,12 +17,20 @@ let package = Package(
             targets: ["BLEMacro"]
         ),
         .library(
+            name: "BLEMacroEasy",
+            targets: ["BLEMacroEasy"]
+        ),
+        .library(
             name: "BLECommand",
             targets: ["BLEMacroCompiler"]
         ),
         .library(
             name: "BLEMacroCompiler",
             targets: ["BLEMacroCompiler"]
+        ),
+        .library(
+            name: "BLEInternal",
+            targets: ["BLEInternal"]
         ),
         .library(
             name: "BLEInterpreter",
@@ -151,5 +159,22 @@ let package = Package(
                 .copy("Fixtures"),
             ]
         ),
+        .target(
+            name: "BLEMacroEasy",
+            dependencies: [
+                "BLEInternal",
+                "BLEMacro",
+                "BLEMacroCompiler",
+                "BLECommand",
+                "BLEInterpreter",
+                "CoreBluetoothTestable",
+            ]
+        ),
+        .executableTarget(
+            name: "BLEMacroExamples",
+            dependencies: [
+                "BLEMacroEasy",
+            ]
+        )
     ]
 )

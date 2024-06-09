@@ -11,7 +11,7 @@ public protocol CentralManagerTasksProtocol {
 
 
 public class CentralManagerTasks: CentralManagerTasksProtocol {
-    private var logger: any LoggerProtocol
+    private let logger: any LoggerProtocol
     private let centralManager: any CentralManagerProtocol
     
     
@@ -114,7 +114,7 @@ public class CentralManagerTasks: CentralManagerTasksProtocol {
     private func waitUntilPowerOn() async -> Result<Void, DiscoveryError> {
         return await withCheckedContinuation { continuation in
             var cancellables = Set<AnyCancellable>()
-            var logger = self.logger
+            let logger = self.logger
             
             self.centralManager.didUpdateState
                 .sink(receiveValue: { state in

@@ -51,24 +51,34 @@ struct MacroExecution: AsyncParsableCommand {
             throw ExitCode(1)
         }
 
-        var logger = Logger(severity: severity, writer: ConsoleLogWriter.stderr)
+        let logger = Logger(severity: severity, writer: ConsoleLogWriter.stderr)
         
         do {
             let macroXML = try String(contentsOfFile: macroXMLPath, encoding: .utf8)
+            logger.info("macro loaded")
+
             let xml = try XMLDocument(xmlString: macroXML)
             let macro = try MacroXMLParser.parse(xml: xml).get()
+            
+            logger.info("macro parse succeeded")
+            
             let commands = try Compiler(loggingBy: logger).compile(macro: macro).get()
             
             logger.info("compilation succeeded")
             
             let central = CentralManager(loggingBy: logger)
             let peripheralTasks = BLEInterpreter.CentralManagerTasks(loggingBy: logger, centralManager: central)
+            
+            logger.info("connecting...")
+
             let peripheral = try await peripheralTasks.connect(uuid: uuid).get()
             defer { central.cancelPeripheralConnection(peripheral) }
 
-            logger.info("peripheral connected")
+            logger.info("connected")
             
-            let interpreter = Interpreter(onPeripheral: peripheral, loggingBy: logger)
+            let interpreter = Interpreter(onPeripheral: peripheral, loggingBy: logger) { data in
+                print(toStdout: HexEncoding.lower.encode(data: data))
+            }
             _ = try await interpreter.interpret(commands: commands).get()
             logger.info("done")
         } catch (let e) {

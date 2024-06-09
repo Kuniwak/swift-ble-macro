@@ -69,7 +69,7 @@ public class CentralManager: NSObject, CentralManagerProtocol {
     private let centralManager: CBCentralManager
     public var _wrapped: CBCentralManager? { centralManager }
     
-    private var logger: LoggerProtocol
+    private let logger: LoggerProtocol
 
     
     // MARK: - Initializers

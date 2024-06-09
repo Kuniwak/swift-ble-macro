@@ -38,7 +38,7 @@ struct MacroCompilation: ParsableCommand {
             throw ExitCode(1)
         }
 
-        var logger = Logger(severity: severity, writer: ConsoleLogWriter.stderr)
+        let logger = Logger(severity: severity, writer: ConsoleLogWriter.stderr)
         
         do {
             let macroXML = try String(contentsOfFile: macroXMLPath, encoding: .utf8)

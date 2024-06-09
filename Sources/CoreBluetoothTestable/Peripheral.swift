@@ -119,7 +119,7 @@ public class Peripheral: NSObject, PeripheralProtocol {
     private let peripheral: CBPeripheral
     public var _wrapped: CBPeripheral? { peripheral }
     
-    private var logger: LoggerProtocol
+    private let logger: LoggerProtocol
     
 
     // MARK: - Initializers

@@ -4,7 +4,12 @@ import Foundation
 
 /// iOS 12.x compatible log writer for Apple's OSLog
 public class OSLogWriter: LogWriterProtocol {
-    public init() {}
+    private let osLog: OSLog
+    
+    
+    public init(_ osLog: OSLog) {
+        self.osLog = osLog
+    }
     
     
     public static func logType(_ severity: LogSeverity) -> OSLogType {
@@ -26,12 +31,9 @@ public class OSLogWriter: LogWriterProtocol {
     public func log(_ severity: LogSeverity, _ message: String) {
         let chunks = OSLogWriter.split("[\(severity.description)] \(message)", byByteCount: 1024)
         for chunk in chunks {
-            os_log("%@", log: OSLogWriter.log, type: OSLogWriter.logType(severity), chunk)
+            os_log("%@", log: osLog, type: OSLogWriter.logType(severity), chunk)
         }
     }
-    
-    
-    private static let log = OSLog(subsystem: "com.kuniwak.ble-macro-kit", category: "Bluetooth")
     
     
     private static func split(_ s: String, byByteCount byteCount: Int) -> [String] {

@@ -1,31 +1,31 @@
-public struct SpyLogger: LoggerProtocol {
+public class SpyLogger: LoggerProtocol {
     public private(set) var entries = [CapturedLogEntry]()
     
     
     public init() {}
     
     
-    public mutating func trace(_ s: String = #function) {
+    public func trace(_ s: String = #function) {
         debug(s)
     }
     
-    public mutating func debug(_ message: String) {
+    public func debug(_ message: String) {
         entries.append(.init(severity: .debug, message: message))
     }
     
-    public mutating func info(_ message: String) {
+    public func info(_ message: String) {
         entries.append(.init(severity: .info, message: message))
     }
     
-    public mutating func notice(_ message: String) {
+    public func notice(_ message: String) {
         entries.append(.init(severity: .notice, message: message))
     }
     
-    public mutating func error(_ message: String) {
+    public func error(_ message: String) {
         entries.append(.init(severity: .error, message: message))
     }
     
-    public mutating func fault(_ message: String) {
+    public func fault(_ message: String) {
         entries.append(.init(severity: .fault, message: message))
     }
 }

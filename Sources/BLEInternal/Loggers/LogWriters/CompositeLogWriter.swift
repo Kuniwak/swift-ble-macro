@@ -1,5 +1,5 @@
 /// A logger that logs to multiple loggers at once.
-public struct CompositeLogWriter: LogWriterProtocol {
+public class CompositeLogWriter: LogWriterProtocol {
     private let writers: [any LogWriterProtocol]
     
     
@@ -8,8 +8,8 @@ public struct CompositeLogWriter: LogWriterProtocol {
     }
     
     
-    public mutating func log(_ severity: LogSeverity, _ message: String) {
-        for var writer in writers {
+    public func log(_ severity: LogSeverity, _ message: String) {
+        for writer in writers {
             writer.log(severity, message)
         }
     }

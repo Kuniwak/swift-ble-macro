@@ -46,6 +46,10 @@ public class REPL {
                 continue
             }
             
+            if firstToken == "q" || firstToken == "quit" {
+                break
+            }
+            
             guard let command = commandMap[firstToken] else {
                 print(toStdout: "unknown command: \(firstToken)")
                 print(toStdout: REPL.header, newLine: false)

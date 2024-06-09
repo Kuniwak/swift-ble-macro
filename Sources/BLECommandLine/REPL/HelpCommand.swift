@@ -27,6 +27,7 @@ public struct HelpCommand: REPLCommandProtocol {
                 let names = [command.name] + command.aliases
                 print(toStderr: "\(names.joined(separator: ", "))\t\(command.abstract)")
             }
+            print(toStderr: "q, quit\tQuit the REPL")
         }
         return .success(())
     }

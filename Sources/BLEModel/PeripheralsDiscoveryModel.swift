@@ -159,7 +159,7 @@ public class PeripheralsDiscoveryModelLogger: Subscriber, Cancellable {
     public typealias Failure = Never
     
     public let combineIdentifier = CombineIdentifier()
-    private var logger: any LoggerProtocol
+    private let logger: any LoggerProtocol
     private var cancellables = Set<AnyCancellable>()
 
     public init(loggingBy logger: any LoggerProtocol) {
