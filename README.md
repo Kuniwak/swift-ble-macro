@@ -18,6 +18,7 @@ Add the following to your `Package.swift` file:
 .package(url: "https://github.com/Kuniwak/swift-ble-macro.git", from: "<version>")
 ```
 
+
 ### Products
 
 | Product                 | Description                                                                                     |
@@ -28,10 +29,7 @@ Add the following to your `Package.swift` file:
 | `BLECommand`            | Defines the BLE macro IR.                                                                       |                     
 | `BLEInterpreter`        | Defines the BLE macro interpreter that interprets BLE macro IR.                                 |
 | `BLEInternal`           | Defines the utilities for BLE macros.                                                           |
-| `CoreBluetoothTestable` | Defines the testable wrappers of Core Bluetooth.                                                |
-| `BLEAssignedNumbers`    | Defines the [BLE assigned numbers](https://www.bluetooth.com/specifications/assigned-numbers/). |
 | `BLEModel`              | Defines the convenient state machines for BLE.                                                  |
-| `BLECommandLine`        | Defines the command line interface for BLE macros.                                              |
 
 
 Supported Macros
@@ -66,8 +64,8 @@ import Foundation
 import BLEMacroEasy
 
 // You can find your iPhone's UUID by running the following command in Terminal:
-// $ git clone https://github.com/Kuniwak/swift-ble-macro
-// $ cd swift-ble-macro
+// $ git clone https://github.com/Kuniwak/swift-ble-macro-cli
+// $ cd swift-ble-macro-cli
 // $ swift run ble discover
 let myIPhoneUUID = UUID(uuidString: "********-****-****-****-************")!
 let myMacro = try String(contentsOf: URL(string: "https://ble-macro.kuniwak.com/iphone/battery-level.xml")!)
@@ -94,8 +92,8 @@ import BLEInternal
 import CoreBluetoothTestable
 
 // You can find your iPhone's UUID by running the following command in Terminal:
-// $ git clone https://github.com/Kuniwak/swift-ble-macro
-// $ cd swift-ble-macro
+// $ git clone https://github.com/Kuniwak/swift-ble-macro-cli
+// $ cd swift-ble-macro-cli
 // $ swift run ble discover
 let myIPhoneUUID = UUID(uuidString: "********-****-****-****-************")!
 let myMacro = try String(contentsOf: URL(string: "https://ble-macro.kuniwak.com/iphone/battery-level.xml")!)
@@ -115,52 +113,6 @@ let interpreter = Interpreter(onPeripheral: peripheral, loggingBy: logger, readH
     print("\(batteryLevel)%")
 }
 try await interpreter.interpret(commands: commands).get()
-```
-
-
-### Run BLE Macros from Command Line
-
-Download binaries from the [releases](https://github.com/Kuniwak/swift-ble-macro/releases) page (Apple Silicon Mac only).
-
-```console
-$ # Discover BLE devices
-$ ble discover
-00000000-0000-0000-0000-000000000000    Example Device 1    -78
-11111111-1111-1111-1111-111111111111    Example Device 2    -47
-22222222-2222-2222-2222-222222222222    Example Device 3    -54
-...
-
-$ # press Ctrl+C to stop scanning
-
-$ # Run a BLE macro
-$ ble run path/to/your/ble-macro.xml --uuid 00000000-0000-0000-0000-000000000000
-
-$ # Run a BLE REPL
-$ ble repl --uuid 00000000-0000-0000-0000-000000000000
-connecting...
-connected
-
-(ble) ?
-write-command, w, wc    Write to a characteristic without a response
-write-descriptor, wd    Write to a descriptor
-write-request, req      Write to a characteristic with a response
-read, r Read from a characteristic
-discovery-service, ds   Discover services
-discovery-characteristics, dc   Discover characteristics
-discovery-descriptor, dd        Discover descriptors
-q, quit Quit the REPL
-
-(ble) dc
-180A 2A29 read
-180A 2A24 read
-D0611E78-BBB4-4591-A5F8-487910AE4366 8667556C-9A37-4C91-84ED-54EE27D90049 write/write/notify/extendedProperties
-9FA480E0-4967-4542-9390-D343DC5D04AE AF0BADB1-5B99-43CD-917A-A77BC549E3CC write/write/notify/extendedProperties
-180F 2A19 read/notify
-1805 2A2B read/notify
-1805 2A0F readk
-
-(ble) r 180F 2A19
-58
 ```
 
 
