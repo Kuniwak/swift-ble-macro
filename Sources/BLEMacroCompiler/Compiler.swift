@@ -5,6 +5,7 @@ import BLEInternal
 import BLEMacro
 import BLECommand
 import BLEAssignedNumbers
+import Logger
 
 
 open class Compiler {

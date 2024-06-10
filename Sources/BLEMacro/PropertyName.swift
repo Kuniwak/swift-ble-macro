@@ -1,4 +1,4 @@
-import Foundation
+import Fuzi
 
 
 public struct PropertyName: RawRepresentable, Hashable, Codable {
@@ -20,10 +20,12 @@ public struct PropertyName: RawRepresentable, Hashable, Codable {
     public static let signedWrite = PropertyName(rawValue: "SIGNED_WRITE")
     public static let extendedProperties = PropertyName(rawValue: "EXTENDED_PROPERTIES")
     
+    public static let attributeName = "name"
     
-    public static func parse(xml: XMLElement) -> Result<PropertyName, MacroXMLError> {
-        guard let rawValue = xml.attribute(forName: "name")?.stringValue else {
-            return .failure(.missingAttribute(element: xml.name, attribute: "name"))
+    
+    public static func parse(xml: Fuzi.XMLElement) -> Result<PropertyName, MacroXMLError> {
+        guard let rawValue = xml.attr(attributeName) else {
+            return .failure(.missingAttribute(element: xml.tag, attribute: attributeName))
         }
         
         switch rawValue {

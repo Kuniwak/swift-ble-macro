@@ -1,4 +1,5 @@
-import Foundation
+import struct Foundation.UUID
+import Fuzi
 
 
 public struct AssertCharacteristic: Equatable {
@@ -29,20 +30,15 @@ public struct AssertCharacteristic: Equatable {
     public static let uuidAttribute = "uuid"
 
 
-    public static func supported(xml: XMLElement) -> Bool {
-        xml.name == name
-    }
-
-
-    public static func parse(xml: XMLElement) -> Result<AssertCharacteristic, MacroXMLError> {
-        guard supported(xml: xml) else {
-            return .failure(.unexpectedElement(expected: name, actual: xml.name))
+    public static func parse(xml: Fuzi.XMLElement) -> Result<AssertCharacteristic, MacroXMLError> {
+        guard xml.tag == name else {
+            return .failure(.unexpectedElement(expected: name, actual: xml.tag))
         }
 
-        let description = xml.attribute(forName: descriptionAttribute)?.stringValue
+        let description = xml.attr(descriptionAttribute)
 
-        guard let uuidString = xml.attribute(forName: uuidAttribute)?.stringValue else {
-            return .failure(.missingAttribute(element: xml.name, attribute: uuidAttribute))
+        guard let uuidString = xml.attr(uuidAttribute) else {
+            return .failure(.missingAttribute(element: xml.tag, attribute: uuidAttribute))
         }
         guard let uuid = UUID(uuidString: uuidString) else {
             return .failure(.malformedUUIDAttribute(element: uuidString, attribute: uuidAttribute, uuidString: uuidString))
@@ -52,33 +48,31 @@ public struct AssertCharacteristic: Equatable {
         var assertDescriptors = [AssertDescriptor]()
         var assertCCCDs = [AssertCCCD]()
 
-        for child in xml.children ?? [] {
-            guard let element = child as? XMLElement else { continue }
-            
-            switch element.name {
+        for child in xml.children {
+            switch child.tag {
             case Property.name:
-                switch Property.parse(xml: element) {
+                switch Property.parse(xml: child) {
                 case .failure(let error):
                     return .failure(error)
                 case .success(let property):
                     properties.append(property)
                 }
             case AssertDescriptor.name:
-                switch AssertDescriptor.parse(xml: element) {
+                switch AssertDescriptor.parse(xml: child) {
                 case .failure(let error):
                     return .failure(error)
                 case .success(let descriptor):
                     assertDescriptors.append(descriptor)
                 }
             case AssertCCCD.name:
-                switch AssertCCCD.parse(xml: element) {
+                switch AssertCCCD.parse(xml: child) {
                 case .failure(let error):
                     return .failure(error)
                 case .success(let cccd):
                     assertCCCDs.append(cccd)
                 }
             default:
-                return .failure(.notSupportedChildElement(parent: xml.name, child: element.name))
+                return .failure(.notSupportedChildElement(parent: xml.tag, child: child.tag))
             }
         }
         return .success(
@@ -94,24 +88,16 @@ public struct AssertCharacteristic: Equatable {
 
 
     public func xml() -> XMLElement {
-        let element = XMLElement(name: AssertCharacteristic.name)
-
+        var attributes = [String: String]()
+        
         if let description = description {
-            let descAttr = XMLNode(kind: .attribute)
-            descAttr.name = AssertCharacteristic.descriptionAttribute
-            descAttr.stringValue = description
-            element.addAttribute(descAttr)
+            attributes[AssertCharacteristic.descriptionAttribute] = description
         }
-
-        let uuidAttr = XMLNode(kind: .attribute)
-        uuidAttr.name = AssertCharacteristic.uuidAttribute
-        uuidAttr.stringValue = uuid.uuidString
-        element.addAttribute(uuidAttr)
-
-        let children = properties.map { $0.xml() } + assertDescriptors.map { $0.xml() } + (assertCCCD.map { [$0.xml()] } ?? [])
-        for child in children {
-            element.addChild(child)
-        }
-        return element
+        
+        return XMLElement(
+            tag: AssertCharacteristic.name,
+            attributes: attributes,
+            children: properties.map { $0.xml() } + assertDescriptors.map { $0.xml() } + (assertCCCD != nil ? [assertCCCD!.xml()] : [])
+        )
     }
 }

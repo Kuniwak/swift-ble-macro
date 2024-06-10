@@ -1,4 +1,5 @@
-import Foundation
+import struct Foundation.UUID
+import Fuzi
 import BLEInternal
 
 
@@ -24,24 +25,21 @@ public struct AssertService: Equatable {
     public static let uuidAttribute = "uuid"
 
 
-    public static func parse(xml: XMLElement) -> Result<AssertService, MacroXMLError> {
-        guard xml.name == name else {
-            return .failure(.unexpectedElement(expected: AssertService.name, actual: xml.name))
+    public static func parse(xml: Fuzi.XMLElement) -> Result<AssertService, MacroXMLError> {
+        guard xml.tag == name else {
+            return .failure(.unexpectedElement(expected: AssertService.name, actual: xml.tag))
         }
 
-        let description = xml.attribute(forName: descriptionAttribute)?.stringValue
-        guard let uuidString = xml.attribute(forName: uuidAttribute)?.stringValue else {
-            return .failure(.missingAttribute(element: xml.name, attribute: uuidAttribute))
+        let description = xml.attr(descriptionAttribute)
+        guard let uuidString = xml.attr(uuidAttribute) else {
+            return .failure(.missingAttribute(element: xml.tag, attribute: uuidAttribute))
         }
         guard let uuid = UUID(uuidString: uuidString) else {
             return .failure(.malformedUUIDAttribute(element: uuidString, attribute: uuidAttribute, uuidString: uuidString))
         }
 
-        let characteristicAssertResults = (xml.children ?? []).compactMap { child -> Result<AssertCharacteristic, MacroXMLError>? in
-            guard let element = child as? XMLElement else {
-                return nil
-            }
-            return AssertCharacteristic.parse(xml: element)
+        let characteristicAssertResults = xml.children.compactMap { child -> Result<AssertCharacteristic, MacroXMLError>? in
+            return AssertCharacteristic.parse(xml: child)
         }
 
         return Results.combineAll(characteristicAssertResults).map { characteristicAsserts in
@@ -55,21 +53,14 @@ public struct AssertService: Equatable {
 
 
     public func xml() -> XMLElement {
-        let element = XMLElement(name: AssertService.name)
-
+        var attributes = [String: String]()
+        
         if let description = description {
-            let descAttr = XMLNode(kind: .attribute)
-            descAttr.name = AssertService.descriptionAttribute
-            descAttr.stringValue = description
-            element.addAttribute(descAttr)
+            attributes[AssertService.descriptionAttribute] = description
         }
-
-        let uuidAttr = XMLNode(kind: .attribute)
-        uuidAttr.name = AssertService.uuidAttribute
-        uuidAttr.stringValue = uuid.uuidString
-        element.addAttribute(uuidAttr)
-
-        element.setChildren(assertCharacteristics.map { $0.xml() })
-        return element
+        
+        attributes[AssertService.uuidAttribute] = uuid.uuidString
+        
+        return XMLElement(tag: AssertService.name, attributes: attributes, children: assertCharacteristics.map { $0.xml() })
     }
 }

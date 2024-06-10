@@ -1,4 +1,5 @@
-import Foundation
+import struct Foundation.UUID
+import Fuzi
 
 
 public struct Read: Equatable {
@@ -29,25 +30,25 @@ public struct Read: Equatable {
     public static let characteristicInstanceIDAttribute = "characteristic-instance-id"
 
 
-    public static func parse(xml: XMLElement) -> Result<Read, MacroXMLError> {
-        guard xml.name == name else {
-            return .failure(.unexpectedElement(expected: name, actual: xml.name))
+    public static func parse(xml: Fuzi.XMLElement) -> Result<Read, MacroXMLError> {
+        guard xml.tag == name else {
+            return .failure(.unexpectedElement(expected: name, actual: xml.tag))
         }
 
-        let description = xml.attribute(forName: descriptionAttribute)?.stringValue
+        let description = xml.attr(descriptionAttribute)
 
-        guard let serviceUUIDString = xml.attribute(forName: serviceUUIDAttribute)?.stringValue else {
-            return .failure(.missingAttribute(element: xml.name, attribute: serviceUUIDAttribute))
+        guard let serviceUUIDString = xml.attr(serviceUUIDAttribute) else {
+            return .failure(.missingAttribute(element: xml.tag, attribute: serviceUUIDAttribute))
         }
         guard let serviceUUID = UUID(uuidString: serviceUUIDString) else {
-            return .failure(.malformedUUIDAttribute(element: xml.name, attribute: serviceUUIDAttribute, uuidString: serviceUUIDString))
+            return .failure(.malformedUUIDAttribute(element: xml.tag, attribute: serviceUUIDAttribute, uuidString: serviceUUIDString))
         }
 
-        guard let characteristicUUIDString = xml.attribute(forName: characteristicUUIDAttribute)?.stringValue else {
-            return .failure(.missingAttribute(element: xml.name, attribute: characteristicUUIDAttribute))
+        guard let characteristicUUIDString = xml.attr(characteristicUUIDAttribute) else {
+            return .failure(.missingAttribute(element: xml.tag, attribute: characteristicUUIDAttribute))
         }
         guard let characteristicUUID = UUID(uuidString: characteristicUUIDString) else {
-            return .failure(.malformedUUIDAttribute(element: xml.name, attribute: characteristicUUIDAttribute, uuidString: characteristicUUIDString))
+            return .failure(.malformedUUIDAttribute(element: xml.tag, attribute: characteristicUUIDAttribute, uuidString: characteristicUUIDString))
         }
 
         return AssertValue.parse(childrenOf: xml).map { valueAsserts in
@@ -62,25 +63,21 @@ public struct Read: Equatable {
     
     
     public func xml() -> XMLElement {
-        let element = XMLElement(name: Read.name)
+        var attributes = [String: String]()
         
-        if let description {
-            let attr = XMLNode(kind: .attribute)
-            attr.name = Read.descriptionAttribute
-            attr.stringValue = description
-            element.addAttribute(attr)
+        if let description = description {
+            attributes[Read.descriptionAttribute] = description
         }
         
-        let serviceUUIDAttr = XMLNode(kind: .attribute)
-        serviceUUIDAttr.name = Read.serviceUUIDAttribute
-        serviceUUIDAttr.stringValue = serviceUUID.uuidString
-        element.addAttribute(serviceUUIDAttr)
+        attributes[Read.serviceUUIDAttribute] = serviceUUID.uuidString
+        attributes[Read.characteristicUUIDAttribute] = characteristicUUID.uuidString
         
-        let characteristicUUIDAttr = XMLNode(kind: .attribute)
-        characteristicUUIDAttr.name = Read.characteristicUUIDAttribute
-        characteristicUUIDAttr.stringValue = characteristicUUID.uuidString
-        element.addAttribute(characteristicUUIDAttr)
+        let children = assertValue.map { [$0.xml()] } ?? []
         
-        return element
+        return XMLElement(
+            tag: Read.name,
+            attributes: attributes,
+            children: children
+        )
     }
 }

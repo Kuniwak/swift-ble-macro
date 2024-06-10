@@ -1,4 +1,4 @@
-import Foundation
+import Fuzi
 
 
 public struct Property: Equatable {
@@ -20,9 +20,9 @@ public struct Property: Equatable {
     public static let requirementAttribute = "requirement"
 
 
-    public static func parse(xml: XMLElement) -> Result<Property, MacroXMLError> {
-        guard xml.name == name else {
-            return .failure(.unexpectedElement(expected: name, actual: xml.name))
+    public static func parse(xml: Fuzi.XMLElement) -> Result<Property, MacroXMLError> {
+        guard xml.tag == name else {
+            return .failure(.unexpectedElement(expected: name, actual: xml.tag))
         }
         
         switch (PropertyName.parse(xml: xml), PropertyRequirement.parse(xml: xml)) {
@@ -34,22 +34,21 @@ public struct Property: Equatable {
             return .success(Property(name: name, requirement: requirement))
         }
     }
-
-
+    
+    
     public func xml() -> XMLElement {
-        let element = XMLElement(name: Property.name)
+        var attributes = [String: String]()
         
-        let nameAttr = XMLNode(kind: .attribute)
-        nameAttr.name = Property.nameAttribute
-        nameAttr.stringValue = name.rawValue
+        attributes[Property.nameAttribute] = name.rawValue
         
-        if let requirement {
-            let requirementAttr = XMLNode(kind: .attribute)
-            requirementAttr.name = Property.requirementAttribute
-            requirementAttr.stringValue = requirement.rawValue
-            element.addAttribute(requirementAttr)
+        if let requirement = requirement {
+            attributes[Property.requirementAttribute] = requirement.rawValue
         }
         
-        return element
+        return XMLElement(
+            tag: Property.name,
+            attributes: attributes,
+            children: []
+        )
     }
 }

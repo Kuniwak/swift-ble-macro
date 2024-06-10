@@ -1,4 +1,4 @@
-import Foundation
+import Fuzi
 import BLEInternal
 
 
@@ -22,14 +22,14 @@ public struct AssertValue: Equatable {
     public static let valueStringAttribute = "value-string"
 
 
-    public static func parse(xml: XMLElement) -> Result<AssertValue, MacroXMLError> {
-        guard xml.name == name else {
-            return .failure(.unexpectedElement(expected: AssertValue.name, actual: xml.name))
+    public static func parse(xml: Fuzi.XMLElement) -> Result<AssertValue, MacroXMLError> {
+        guard xml.tag == name else {
+            return .failure(.unexpectedElement(expected: AssertValue.name, actual: xml.tag))
         }
 
-        let description = xml.attribute(forName: descriptionAttribute)?.stringValue
+        let description = xml.attr(descriptionAttribute)
 
-        if let value = xml.attribute(forName: valueAttribute)?.stringValue {
+        if let value = xml.attr(valueAttribute) {
             switch HexEncoding.decode(hexString: value) {
             case .failure(let error):
                 return .failure(.malformedValueAttribute(hexEncodingError: error))
@@ -39,23 +39,17 @@ public struct AssertValue: Equatable {
             }
         }
 
-        if let value = xml.attribute(forName: valueStringAttribute)?.stringValue {
+        if let value = xml.attr(valueStringAttribute) {
             return .success(.init(description: description, value: .string(value)))
         }
 
-        return .failure(.missingValueOrValueStringAttribute(name: xml.name))
+        return .failure(.missingValueOrValueStringAttribute(name: xml.tag))
     }
     
     
-    public static func parse(childrenOf xml: XMLElement) -> Result<[AssertValue], MacroXMLError> {
-        let children = xml.children ?? []
-        
-        let assertValueResults = children.compactMap { child -> Result<AssertValue, MacroXMLError>? in
-            guard let element = child as? XMLElement else {
-                return nil
-            }
-            
-            return AssertValue.parse(xml: element)
+    public static func parse(childrenOf xml: Fuzi.XMLElement) -> Result<[AssertValue], MacroXMLError> {
+        let assertValueResults = xml.children.compactMap { child -> Result<AssertValue, MacroXMLError>? in
+            return AssertValue.parse(xml: child)
         }
         
         return Results.combineAll(assertValueResults)
@@ -63,14 +57,14 @@ public struct AssertValue: Equatable {
 
 
     public func xml() -> XMLElement {
-        let element = XMLElement(name: AssertValue.name)
+        var attributes = [String: String]()
+        
         if let description = description {
-            let attr = XMLNode(kind: .attribute)
-            attr.name = AssertValue.descriptionAttribute
-            attr.stringValue = description
-            element.addAttribute(attr)
+            attributes[AssertValue.descriptionAttribute] = description
         }
-        value.addAttribute(toElement: element)
-        return element
+        
+        value.addAttribute(to: &attributes)
+        
+        return XMLElement(tag: AssertValue.name, attributes: attributes, children: [])
     }
 }

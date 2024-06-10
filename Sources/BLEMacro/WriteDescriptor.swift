@@ -1,4 +1,5 @@
-import Foundation
+import struct Foundation.UUID
+import Fuzi
 
 
 public struct WriteDescriptor: Equatable {
@@ -31,32 +32,32 @@ public struct WriteDescriptor: Equatable {
     public static let characteristicUUIDAttribute = "characteristic-uuid"
     
     
-    public static func parse(xml: XMLElement) -> Result<WriteDescriptor, MacroXMLError> {
-        guard xml.name == name else {
-            return .failure(.unexpectedElement(expected: name, actual: xml.name))
+    public static func parse(xml: Fuzi.XMLElement) -> Result<WriteDescriptor, MacroXMLError> {
+        guard xml.tag == name else {
+            return .failure(.unexpectedElement(expected: name, actual: xml.tag))
         }
         
-        let description = xml.attribute(forName: descriptionAttribute)?.stringValue
+        let description = xml.attr(descriptionAttribute)
         
-        guard let descriptorUUIDString = xml.attribute(forName: descriptorUUIDAttribute)?.stringValue else {
-            return .failure(.missingAttribute(element: xml.name, attribute: descriptorUUIDAttribute))
+        guard let descriptorUUIDString = xml.attr(descriptorUUIDAttribute) else {
+            return .failure(.missingAttribute(element: xml.tag, attribute: descriptorUUIDAttribute))
         }
         guard let uuid = UUID(uuidString: descriptorUUIDString) else {
-            return .failure(.malformedUUIDAttribute(element: xml.name, attribute: descriptorUUIDAttribute, uuidString: descriptorUUIDString))
+            return .failure(.malformedUUIDAttribute(element: xml.tag, attribute: descriptorUUIDAttribute, uuidString: descriptorUUIDString))
         }
         
-        guard let serviceUUIDString = xml.attribute(forName: serviceUUIDAttribute)?.stringValue else {
-            return .failure(.missingAttribute(element: xml.name, attribute: serviceUUIDAttribute))
+        guard let serviceUUIDString = xml.attr(serviceUUIDAttribute) else {
+            return .failure(.missingAttribute(element: xml.tag, attribute: serviceUUIDAttribute))
         }
         guard let serviceUUID = UUID(uuidString: serviceUUIDString) else {
-            return .failure(.malformedUUIDAttribute(element: xml.name, attribute: serviceUUIDAttribute, uuidString: serviceUUIDString))
+            return .failure(.malformedUUIDAttribute(element: xml.tag, attribute: serviceUUIDAttribute, uuidString: serviceUUIDString))
         }
         
-        guard let characteristicUUIDString = xml.attribute(forName: characteristicUUIDAttribute)?.stringValue else {
-            return .failure(.missingAttribute(element: xml.name, attribute: characteristicUUIDAttribute))
+        guard let characteristicUUIDString = xml.attr(characteristicUUIDAttribute) else {
+            return .failure(.missingAttribute(element: xml.tag, attribute: characteristicUUIDAttribute))
         }
         guard let characteristicUUID = UUID(uuidString: characteristicUUIDString) else {
-            return .failure(.malformedUUIDAttribute(element: xml.name, attribute: characteristicUUIDAttribute, uuidString: characteristicUUIDString))
+            return .failure(.malformedUUIDAttribute(element: xml.tag, attribute: characteristicUUIDAttribute, uuidString: characteristicUUIDString))
         }
         
         return Value.parse(xml: xml).map { value in
@@ -72,31 +73,21 @@ public struct WriteDescriptor: Equatable {
     
     
     public func xml() -> XMLElement {
-        let element = XMLElement(name: WriteDescriptor.name)
+        var attributes = [String: String]()
         
         if let description = description {
-            let attr = XMLNode(kind: .attribute)
-            attr.name = WriteDescriptor.descriptionAttribute
-            attr.stringValue = description
-            element.addAttribute(attr)
+            attributes[WriteDescriptor.descriptionAttribute] = description
         }
         
-        let uuidAttr = XMLNode(kind: .attribute)
-        uuidAttr.name = WriteDescriptor.descriptorUUIDAttribute
-        uuidAttr.stringValue = uuid.uuidString
-        element.addAttribute(uuidAttr)
+        attributes[WriteDescriptor.descriptorUUIDAttribute] = uuid.uuidString
+        attributes[WriteDescriptor.serviceUUIDAttribute] = serviceUUID.uuidString
+        attributes[WriteDescriptor.characteristicUUIDAttribute] = characteristicUUID.uuidString
+        value.addAttribute(to: &attributes)
         
-        let serviceUUIDAttr = XMLNode(kind: .attribute)
-        serviceUUIDAttr.name = WriteDescriptor.serviceUUIDAttribute
-        serviceUUIDAttr.stringValue = serviceUUID.uuidString
-        element.addAttribute(serviceUUIDAttr)
-        
-        let characteristicUUIDAttr = XMLNode(kind: .attribute)
-        characteristicUUIDAttr.name = WriteDescriptor.characteristicUUIDAttribute
-        characteristicUUIDAttr.stringValue = characteristicUUID.uuidString
-        element.addAttribute(characteristicUUIDAttr)
-        
-        value.addAttribute(toElement: element)
-        return element
+        return XMLElement(
+            tag: WriteDescriptor.name,
+            attributes: attributes,
+            children: []
+        )
     }
 }

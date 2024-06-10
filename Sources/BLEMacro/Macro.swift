@@ -1,4 +1,4 @@
-import Foundation
+import Fuzi
 
 
 public struct Macro: Equatable {
@@ -26,31 +26,29 @@ public struct Macro: Equatable {
     public static let iconAttribute = "icon"
 
 
-    public static func parse(xml: XMLElement) -> Result<Macro, MacroXMLError> {
-        guard xml.name == name else {
-            return .failure(.unexpectedElement(expected: name, actual: xml.name))
+    public static func parse(xml: Fuzi.XMLElement) -> Result<Macro, MacroXMLError> {
+        guard xml.tag == name else {
+            return .failure(.unexpectedElement(expected: name, actual: xml.tag))
         }
 
-        guard let name = xml.attribute(forName: nameAttribute)?.stringValue else {
-            return .failure(.missingAttribute(element: xml.name, attribute: nameAttribute))
+        guard let name = xml.attr(nameAttribute) else {
+            return .failure(.missingAttribute(element: xml.tag, attribute: nameAttribute))
         }
 
         var assertServices = [AssertService]()
         var operations = [Operation]()
         
-        for child in xml.children ?? [] {
-            guard let element = child as? XMLElement else { continue }
-            
-            switch element.name {
+        for child in xml.children {
+            switch child.tag {
             case AssertService.name:
-                switch AssertService.parse(xml: element) {
+                switch AssertService.parse(xml: child) {
                 case .success(let serviceAssert):
                     assertServices.append(serviceAssert)
                 case .failure(let error):
                     return .failure(error)
                 }
             default:
-                switch Operation.parse(xml: element) {
+                switch Operation.parse(xml: child) {
                 case .success(let operation):
                     operations.append(operation)
                 case .failure(let error):

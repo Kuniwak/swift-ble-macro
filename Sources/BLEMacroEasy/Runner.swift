@@ -1,21 +1,25 @@
-import Foundation
+import struct Foundation.UUID
+import struct Foundation.Data
+import struct Foundation.URL
 import os
+import Fuzi
 import BLEMacro
 import BLEMacroCompiler
 import BLEInterpreter
 import BLEInternal
 import CoreBluetoothTestable
+import Logger
 
 
 public func run(macroXMLString: String, on peripheralUUID: UUID, loggingTo logDst: LogDestination = .console, withSeverity severity: LogSeverity = .info, _ readHandler: ((Data) -> Void)? = nil) async throws {
-    let macroXML = try XMLDocument(xmlString: macroXMLString)
+    let macroXML = try Fuzi.XMLDocument(string: macroXMLString, encoding: .utf8)
     try await run(macroXML: macroXML, on: peripheralUUID, loggingTo: logDst, withSeverity: severity, readHandler)
 }
 
 
 public func run(macroXMLURL: URL, on peripheralUUID: UUID, loggingTo logDst: LogDestination = .console, withSeverity severity: LogSeverity = .info, _ readHandler: ((Data) -> Void)? = nil) async throws {
-    let macroXML = try XMLDocument(contentsOf: macroXMLURL)
-    try await run(macroXML: macroXML, on: peripheralUUID, loggingTo: logDst, withSeverity: severity, readHandler)
+    let macroXMLString = try String(contentsOf: macroXMLURL, encoding: .utf8)
+    try await run(macroXMLString: macroXMLString, on: peripheralUUID, loggingTo: logDst, withSeverity: severity, readHandler)
 }
 
 

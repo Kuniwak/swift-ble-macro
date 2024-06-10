@@ -1,4 +1,4 @@
-import Foundation
+import Fuzi
 
 
 public struct AssertCCCD: Equatable {
@@ -14,25 +14,28 @@ public struct AssertCCCD: Equatable {
     public static let descriptionAttribute = "description"
 
 
-    public static func parse(xml: XMLElement) -> Result<AssertCCCD, MacroXMLError> {
-        guard xml.name == name else {
-            return .failure(.unexpectedElement(expected: name, actual: xml.name))
+    public static func parse(xml: Fuzi.XMLElement) -> Result<AssertCCCD, MacroXMLError> {
+        guard xml.tag == name else {
+            return .failure(.unexpectedElement(expected: name, actual: xml.tag))
         }
 
-        let description = xml.attribute(forName: descriptionAttribute)?.stringValue
+        let description = xml.attr(descriptionAttribute)
 
         return .success(AssertCCCD(description: description))
     }
-
-
+    
+    
     public func xml() -> XMLElement {
-        let element = XMLElement(name: AssertCCCD.name)
-        if let description {
-            let descAttr = XMLNode(kind: .attribute)
-            descAttr.name = AssertCCCD.descriptionAttribute
-            descAttr.stringValue = description
-            element.addAttribute(descAttr)
+        var attributes = [String: String]()
+        
+        if let description = description {
+            attributes[AssertCCCD.descriptionAttribute] = description
         }
-        return element
+        
+        return XMLElement(
+            tag: AssertCCCD.name,
+            attributes: attributes,
+            children: []
+        )
     }
 }

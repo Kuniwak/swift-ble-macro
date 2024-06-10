@@ -1,4 +1,5 @@
-import Foundation
+import struct Foundation.Data
+import Fuzi
 import BLEInternal
 
 
@@ -13,26 +14,20 @@ public enum Value: Equatable {
     public static let valueStringAttributeName = "value-string"
 
 
-    public func addAttribute(toElement xml: XMLElement) {
+    public func addAttribute(to attributes: inout [String: String]) {
         switch self {
         case .data(let data, let encoding):
-            let attr = XMLNode(kind: .attribute)
-            attr.name = Value.valueAttributeName
-            attr.stringValue = encoding.encode(data: data)
-            xml.addAttribute(attr)
+            attributes[Value.valueAttributeName] = encoding.encode(data: data)
         case .string(let string):
-            let attr = XMLNode(kind: .attribute)
-            attr.name = Value.valueStringAttributeName
-            attr.stringValue = string
-            xml.addAttribute(attr)
+            attributes[Value.valueStringAttributeName] = string
         }
     }
 
 
-    public static func parse(xml: XMLElement) -> Result<Value, MacroXMLError> {
-        if let value = xml.attribute(forName: valueAttributeName)?.stringValue {
-            guard xml.attribute(forName: valueStringAttributeName)?.stringValue == nil else {
-                return .failure(.bothValueAndValueStringAttributesPresent(element: xml.name))
+    public static func parse(xml: Fuzi.XMLElement) -> Result<Value, MacroXMLError> {
+        if let value = xml.attr(valueAttributeName) {
+            guard xml.attr(valueStringAttributeName) == nil else {
+                return .failure(.bothValueAndValueStringAttributesPresent(element: xml.tag))
             }
             switch HexEncoding.decode(hexString: value) {
             case .failure(let error):
@@ -40,10 +35,10 @@ public enum Value: Equatable {
             case .success(let (data, encoding)):
                 return .success(.data(data: data, encoding: encoding))
             }
-        } else if let valueString = xml.attribute(forName: valueStringAttributeName)?.stringValue {
+        } else if let valueString = xml.attr(valueStringAttributeName) {
             return .success(.string(valueString))
         } else {
-            return .failure(.missingValueOrValueStringAttribute(name: xml.name))
+            return .failure(.missingValueOrValueStringAttribute(name: xml.tag))
         }
     }
     

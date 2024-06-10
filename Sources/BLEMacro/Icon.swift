@@ -1,4 +1,4 @@
-import Foundation
+import Fuzi
 
 
 public struct Icon: RawRepresentable, Equatable {
@@ -62,9 +62,9 @@ public struct Icon: RawRepresentable, Equatable {
     public static let attribute = "icon"
     
     
-    public static func parse(xml: XMLElement) -> Result<Icon, MacroXMLError> {
-        guard let iconString = xml.attribute(forName: attribute)?.stringValue else {
-            return .failure(.missingAttribute(element: xml.name, attribute: attribute))
+    public static func parse(xml: Fuzi.XMLElement) -> Result<Icon, MacroXMLError> {
+        guard let iconString = xml.attr(attribute) else {
+            return .failure(.missingAttribute(element: xml.tag, attribute: attribute))
         }
         
         switch iconString {

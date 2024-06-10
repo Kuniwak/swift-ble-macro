@@ -2,12 +2,13 @@ import XCTest
 import MirrorDiffKit
 import BLEMacro
 import BLEAssignedNumbers
+import Fuzi
 
 
 final class MacroXMLParserTests: XCTestCase {
     func testParse() throws {
         let url = Bundle.module.url(forResource: "Fixtures/example", withExtension: ".xml")!
-        let xml = try XMLDocument(contentsOf: url)
+        let xml = try Fuzi.XMLDocument(data: Data(contentsOf: url))
         
         switch MacroXMLParser.parse(xml: xml) {
         case .failure(let error):

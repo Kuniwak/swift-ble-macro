@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "swift-ble-macro",
     platforms: [
-        .iOS(.v12),
+        .iOS(.v14),
         .macOS(.v14),
         .watchOS(.v4),
         .visionOS(.v1),
@@ -37,46 +37,32 @@ let package = Package(
             targets: ["BLEInterpreter"]
         ),
         .library(
-            name: "CoreBluetoothTestable",
-            targets: ["CoreBluetoothTestable"]
-        ),
-        .library(
-            name: "BLEAssignedNumbers",
-            targets: ["BLEAssignedNumbers"]
-        ),
-        .library(
             name: "BLEModel",
             targets: ["BLEModel"]
         ),
-        .executable(
-            name: "ble",
-            targets: ["BLECommandLine"]
-        ),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.0"),
-        .package(url: "https://github.com/apple/swift-algorithms", from: "1.2.0"),
-        .package(url: "https://github.com/jpsim/Yams.git", from: "5.1.2"),
-        .package(url: "https://github.com/Kuniwak/MirrorDiffKit", from: "5.0.1"),
-        .package(url: "https://github.com/xcode-actions/swift-signal-handling", from: "1.0.0"),
+        .package(url: "https://github.com/Kuniwak/swift-logger.git", .upToNextMajor(from: "1.0.0")),
+        .package(url: "https://github.com/Kuniwak/core-bluetooth-testable.git", .upToNextMajor(from: "1.0.0")),
+        .package(url: "https://github.com/Kuniwak/swift-ble-assigned-numbers.git", .upToNextMajor(from: "1.0.1")),
+        .package(url: "https://github.com/Kuniwak/MirrorDiffKit.git", .upToNextMajor(from: "5.0.1")),
+        .package(url: "https://github.com/cezheng/Fuzi.git", .upToNextMajor(from: "3.1.3")),
     ],
     targets: [
-        .target(
-            name: "BLEInternal",
-            dependencies: [
-                "BLEAssignedNumbers",
-            ]
-        ),
+        .target(name: "BLEInternal"),
         .testTarget(
             name: "BLEInternalTests",
             dependencies: [
                 "BLEInternal",
+                .product(name: "Logger", package: "swift-logger"),
+                .product(name: "BLEAssignedNumbers", package: "swift-ble-assigned-numbers"),
             ]
         ),
         .target(
             name: "BLEMacro",
             dependencies: [
                 "BLEInternal",
+                "Fuzi",
             ]
         ),
         .target(
@@ -89,7 +75,8 @@ let package = Package(
             name: "BLEModel",
             dependencies: [
                 "BLEInternal",
-                "CoreBluetoothTestable"
+                .product(name: "Logger", package: "swift-logger"),
+                .product(name: "CoreBluetoothTestable", package: "core-bluetooth-testable")
             ]
         ),
         .target(
@@ -98,7 +85,7 @@ let package = Package(
                 "BLEInternal",
                 "BLEMacro",
                 "BLECommand",
-                "BLEAssignedNumbers"
+                .product(name: "BLEAssignedNumbers", package: "swift-ble-assigned-numbers"),
             ]
         ),
         .target(
@@ -106,13 +93,7 @@ let package = Package(
             dependencies: [
                 "BLEInternal",
                 "BLECommand",
-                "CoreBluetoothTestable",
-            ]
-        ),
-        .target(
-            name: "CoreBluetoothTestable",
-            dependencies: [
-                "BLEInternal",
+                .product(name: "CoreBluetoothTestable", package: "core-bluetooth-testable")
             ]
         ),
         .testTarget(
@@ -120,40 +101,8 @@ let package = Package(
             dependencies: [
                 "BLEInternal",
                 "BLEMacro",
-                "BLEAssignedNumbers",
                 "MirrorDiffKit",
-            ],
-            resources: [
-                .copy("Fixtures"),
-            ]
-        ),
-        .executableTarget(
-            name: "BLECommandLine",
-            dependencies: [
-                "BLEInternal",
-                "BLEMacro",
-                "BLEMacroCompiler",
-                "BLECommand",
-                "BLEInterpreter",
-                "BLEModel",
-                .product(name: "ArgumentParser", package: "swift-argument-parser"),
-                .product(name: "SignalHandling", package: "swift-signal-handling"),
-            ]
-        ),
-        .target(name: "BLEAssignedNumbers"),
-        .executableTarget(
-            name: "BLEAssignedNumbersGenerator",
-            dependencies: [
-                .product(name: "ArgumentParser", package: "swift-argument-parser"),
-                .product(name: "Algorithms", package: "swift-algorithms"),
-                .product(name: "Yams", package: "Yams"),
-            ]
-        ),
-        .testTarget(
-            name: "BLEAssignedNumbersGeneratorTests",
-            dependencies: [
-                "BLEAssignedNumbersGenerator",
-                "MirrorDiffKit",
+                .product(name: "BLEAssignedNumbers", package: "swift-ble-assigned-numbers"),
             ],
             resources: [
                 .copy("Fixtures"),
@@ -167,13 +116,7 @@ let package = Package(
                 "BLEMacroCompiler",
                 "BLECommand",
                 "BLEInterpreter",
-                "CoreBluetoothTestable",
-            ]
-        ),
-        .executableTarget(
-            name: "BLEMacroExamples",
-            dependencies: [
-                "BLEMacroEasy",
+                .product(name: "CoreBluetoothTestable", package: "core-bluetooth-testable")
             ]
         )
     ]

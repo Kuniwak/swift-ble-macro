@@ -1,4 +1,5 @@
-import Foundation
+import struct Foundation.UUID
+import Fuzi
 
 
 public struct AssertDescriptor: Equatable {
@@ -20,15 +21,15 @@ public struct AssertDescriptor: Equatable {
     public static let instanceIDAttribute = "instance-id"
 
 
-    public static func parse(xml: XMLElement) -> Result<AssertDescriptor, MacroXMLError> {
-        guard xml.name == name else {
-            return .failure(.unexpectedElement(expected: AssertDescriptor.name, actual: xml.name))
+    public static func parse(xml: Fuzi.XMLElement) -> Result<AssertDescriptor, MacroXMLError> {
+        guard xml.tag == name else {
+            return .failure(.unexpectedElement(expected: AssertDescriptor.name, actual: xml.tag))
         }
 
-        let description = xml.attribute(forName: descriptionAttribute)?.stringValue
+        let description = xml.attr(descriptionAttribute)
 
-        guard let uuidString = xml.attribute(forName: uuidAttribute)?.stringValue else {
-            return .failure(.missingAttribute(element: xml.name, attribute: uuidAttribute))
+        guard let uuidString = xml.attr(uuidAttribute) else {
+            return .failure(.missingAttribute(element: xml.tag, attribute: uuidAttribute))
         }
         guard let uuid = UUID(uuidString: uuidString) else {
             return .failure(.malformedUUIDAttribute(element: uuidString, attribute: uuidAttribute, uuidString: uuidString))
@@ -41,23 +42,21 @@ public struct AssertDescriptor: Equatable {
             )
         )
     }
-
-
+    
+    
     public func xml() -> XMLElement {
-        let element = XMLElement(name: AssertDescriptor.name)
-
-        if let description {
-            let descAttr = XMLNode(kind: .attribute)
-            descAttr.name = AssertDescriptor.descriptionAttribute
-            descAttr.stringValue = description
-            element.addAttribute(descAttr)
+        var attributes = [String: String]()
+        
+        if let description = description {
+            attributes[AssertDescriptor.descriptionAttribute] = description
         }
-
-        let uuidAttr = XMLNode(kind: .attribute)
-        uuidAttr.name = AssertDescriptor.uuidAttribute
-        uuidAttr.stringValue = uuid.uuidString
-        element.addAttribute(uuidAttr)
-
-        return element
+        
+        attributes[AssertDescriptor.uuidAttribute] = uuid.uuidString
+        
+        return XMLElement(
+            tag: AssertDescriptor.name,
+            attributes: attributes,
+            children: []
+        )
     }
 }

@@ -1,4 +1,4 @@
-import Foundation
+import Fuzi
 
 
 public struct PropertyRequirement: RawRepresentable, Equatable, Codable {
@@ -14,10 +14,12 @@ public struct PropertyRequirement: RawRepresentable, Equatable, Codable {
     public static let optional = PropertyRequirement(rawValue: "OPTIONAL")
     public static let excluded = PropertyRequirement(rawValue: "EXCLUDED")
     
+    public static let attributeName = "requirement"
     
-    public static func parse(xml: XMLElement) -> Result<PropertyRequirement, MacroXMLError> {
-        guard let rawValue = xml.attribute(forName: "requirement")?.stringValue else {
-            return .failure(.missingAttribute(element: xml.name, attribute: "requirement"))
+    
+    public static func parse(xml: Fuzi.XMLElement) -> Result<PropertyRequirement, MacroXMLError> {
+        guard let rawValue = xml.attr(attributeName) else {
+            return .failure(.missingAttribute(element: xml.tag, attribute: attributeName))
         }
         
         switch rawValue {

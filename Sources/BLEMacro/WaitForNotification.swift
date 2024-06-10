@@ -1,4 +1,5 @@
-import Foundation
+import struct Foundation.UUID
+import Fuzi
 
 
 public struct WaitForNotification: Equatable {
@@ -25,25 +26,25 @@ public struct WaitForNotification: Equatable {
     public static let characteristicUUIDAttribute = "characteristic-uuid"
     
     
-    public static func parse(xml: XMLElement) -> Result<WaitForNotification, MacroXMLError> {
-        guard xml.name == name else {
-            return .failure(.unexpectedElement(expected: WaitForNotification.name, actual: xml.name))
+    public static func parse(xml: Fuzi.XMLElement) -> Result<WaitForNotification, MacroXMLError> {
+        guard xml.tag == name else {
+            return .failure(.unexpectedElement(expected: WaitForNotification.name, actual: xml.tag))
         }
         
-        let description = xml.attribute(forName: descriptionAttribute)?.stringValue
+        let description = xml.attr(descriptionAttribute)
         
-        guard let serviceUUIDString = xml.attribute(forName: serviceUUIDAttribute)?.stringValue else {
-            return .failure(.missingAttribute(element: xml.name, attribute: serviceUUIDAttribute))
+        guard let serviceUUIDString = xml.attr(serviceUUIDAttribute) else {
+            return .failure(.missingAttribute(element: xml.tag, attribute: serviceUUIDAttribute))
         }
         guard let serviceUUID = UUID(uuidString: serviceUUIDString) else {
-            return .failure(.malformedUUIDAttribute(element: xml.name, attribute: serviceUUIDAttribute, uuidString: serviceUUIDString))
+            return .failure(.malformedUUIDAttribute(element: xml.tag, attribute: serviceUUIDAttribute, uuidString: serviceUUIDString))
         }
         
-        guard let characteristicUUIDString = xml.attribute(forName: characteristicUUIDAttribute)?.stringValue else {
-            return .failure(.missingAttribute(element: xml.name, attribute: characteristicUUIDAttribute))
+        guard let characteristicUUIDString = xml.attr(characteristicUUIDAttribute) else {
+            return .failure(.missingAttribute(element: xml.tag, attribute: characteristicUUIDAttribute))
         }
         guard let characteristicUUID = UUID(uuidString: characteristicUUIDString) else {
-            return .failure(.malformedUUIDAttribute(element: xml.name, attribute: characteristicUUIDAttribute, uuidString: characteristicUUIDString))
+            return .failure(.malformedUUIDAttribute(element: xml.tag, attribute: characteristicUUIDAttribute, uuidString: characteristicUUIDString))
         }
         
         return AssertValue.parse(childrenOf: xml).map { valueAsserts in

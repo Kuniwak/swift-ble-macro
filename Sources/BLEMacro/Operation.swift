@@ -1,4 +1,4 @@
-import Foundation
+import Fuzi
 
 
 public enum Operation: Equatable {
@@ -10,8 +10,8 @@ public enum Operation: Equatable {
     case notSupported(element: String)
     
     
-    public static func parse(xml: XMLElement) -> Result<Operation, MacroXMLError> {
-        switch xml.name {
+    public static func parse(xml: Fuzi.XMLElement) -> Result<Operation, MacroXMLError> {
+        switch xml.tag {
         case Write.name:
             return Write.parse(xml: xml).map { .write($0) }
         case WriteDescriptor.name:
@@ -23,7 +23,7 @@ public enum Operation: Equatable {
         case WaitForNotification.name:
             return WaitForNotification.parse(xml: xml).map { .waitForNotification($0) }
         default:
-            return .failure(.notSupportedOperation(element: xml.name))
+            return .failure(.notSupportedOperation(element: xml.tag))
         }
     }
 }

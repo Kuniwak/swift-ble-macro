@@ -1,7 +1,7 @@
 import Combine
 import CoreBluetooth
 import CoreBluetoothTestable
-import BLEInternal
+import Logger
 
 
 public struct PeripheralDiscoveryEntry {

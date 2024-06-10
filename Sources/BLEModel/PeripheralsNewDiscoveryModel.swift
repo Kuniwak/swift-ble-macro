@@ -1,6 +1,7 @@
 import Combine
 import CoreBluetooth
 import CoreBluetoothTestable
+import Logger
 
 
 public protocol PeripheralsNewDiscoveryModelProtocol {

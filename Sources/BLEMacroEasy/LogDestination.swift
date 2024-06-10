@@ -1,6 +1,7 @@
 import Foundation
 import os
 import BLEInternal
+import Logger
 
 
 public enum LogDestination: Equatable {

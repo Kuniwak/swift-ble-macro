@@ -3,6 +3,7 @@ import CoreBluetooth
 import CoreBluetoothTestable
 import BLEInternal
 import BLECommand
+import Logger
 
 
 public protocol InterpreterProtocol {

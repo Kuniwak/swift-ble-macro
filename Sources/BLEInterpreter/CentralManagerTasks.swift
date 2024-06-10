@@ -2,6 +2,7 @@ import Foundation
 import Combine
 import BLEInternal
 import CoreBluetoothTestable
+import Logger
 
 
 public protocol CentralManagerTasksProtocol {

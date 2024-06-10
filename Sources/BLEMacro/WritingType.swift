@@ -1,4 +1,4 @@
-import Foundation
+import Fuzi
 
 
 public struct WritingType: RawRepresentable, Equatable {
@@ -17,9 +17,9 @@ public struct WritingType: RawRepresentable, Equatable {
     public static let attribute = "type"
     
     
-    public static func parse(xml: XMLElement) -> Result<WritingType, MacroXMLError> {
-        guard let typeString = xml.attribute(forName: attribute)?.stringValue else {
-            return .failure(.missingAttribute(element: xml.name, attribute: attribute))
+    public static func parse(xml: Fuzi.XMLElement) -> Result<WritingType, MacroXMLError> {
+        guard let typeString = xml.attr(attribute) else {
+            return .failure(.missingAttribute(element: xml.tag, attribute: attribute))
         }
         
         switch typeString {
@@ -28,7 +28,7 @@ public struct WritingType: RawRepresentable, Equatable {
         case writeCommand.rawValue:
             return .success(writeCommand)
         default:
-            return .failure(.notSupportedType(element: xml.name, type: typeString))
+            return .failure(.notSupportedType(element: xml.tag, type: typeString))
         }
     }
 }
