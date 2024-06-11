@@ -23,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Kuniwak/MirrorDiffKit",
       "state" : {
-        "revision" : "8a4e0c645c2a7369527bfabe31af984a277b14ef",
-        "version" : "5.0.1"
+        "revision" : "6d721f86bbc91621b382f5a6a5a2ebd135c256e5",
+        "version" : "6.0.0"
       }
     },
     {
