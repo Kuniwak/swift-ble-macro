@@ -1,15 +1,15 @@
-// swift-tools-version: 5.10
+// swift-tools-version: 5.9
 
 import PackageDescription
 
 let package = Package(
     name: "swift-ble-macro",
     platforms: [
-        .iOS(.v14),
+        .iOS(.v13),
         .macOS(.v14),
-        .watchOS(.v4),
+        .watchOS(.v6),
         .visionOS(.v1),
-        .tvOS(.v12),
+        .tvOS(.v13),
     ],
     products: [
         .library(
@@ -42,8 +42,8 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/Kuniwak/swift-logger.git", .upToNextMajor(from: "1.0.0")),
-        .package(url: "https://github.com/Kuniwak/core-bluetooth-testable.git", .upToNextMajor(from: "1.0.0")),
+        .package(url: "https://github.com/Kuniwak/swift-logger.git", .upToNextMajor(from: "1.1.0")),
+        .package(url: "https://github.com/Kuniwak/core-bluetooth-testable.git", .upToNextMajor(from: "2.0.0")),
         .package(url: "https://github.com/Kuniwak/swift-ble-assigned-numbers.git", .upToNextMajor(from: "1.0.1")),
         .package(url: "https://github.com/Kuniwak/MirrorDiffKit.git", .upToNextMajor(from: "5.0.1")),
         .package(url: "https://github.com/cezheng/Fuzi.git", .upToNextMajor(from: "3.1.3")),

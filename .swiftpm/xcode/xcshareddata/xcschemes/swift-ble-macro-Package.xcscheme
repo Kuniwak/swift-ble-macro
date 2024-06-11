@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1530"
+   LastUpgradeVersion = "1540"
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -15,51 +15,23 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "BluetoothLEMacroKit"
-               BuildableName = "BluetoothLEMacroKit"
-               BlueprintName = "BluetoothLEMacroKit"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "BluetoothLEMacroKitGenerator"
-               BuildableName = "BluetoothLEMacroKitGenerator"
-               BlueprintName = "BluetoothLEMacroKitGenerator"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "CoreBluetoothTestable"
-               BuildableName = "CoreBluetoothTestable"
-               BlueprintName = "CoreBluetoothTestable"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
                BlueprintIdentifier = "BLECommand"
                BuildableName = "BLECommand"
                BlueprintName = "BLECommand"
+               ReferencedContainer = "container:">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "BLEInternal"
+               BuildableName = "BLEInternal"
+               BlueprintName = "BLEInternal"
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
@@ -113,23 +85,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "BLEAssignedNumbersGenerator"
-               BuildableName = "BLEAssignedNumbersGenerator"
-               BlueprintName = "BLEAssignedNumbersGenerator"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "BLECommandLine"
-               BuildableName = "BLECommandLine"
-               BlueprintName = "BLECommandLine"
+               BlueprintIdentifier = "BLEMacroEasy"
+               BuildableName = "BLEMacroEasy"
+               BlueprintName = "BLEMacroEasy"
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
@@ -147,20 +105,6 @@
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "ble"
-               BuildableName = "ble"
-               BlueprintName = "ble"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -174,29 +118,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "BluetoothLEMacroKitGeneratorTests"
-               BuildableName = "BluetoothLEMacroKitGeneratorTests"
-               BlueprintName = "BluetoothLEMacroKitGeneratorTests"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "BluetoothLEMacroKitTests"
-               BuildableName = "BluetoothLEMacroKitTests"
-               BlueprintName = "BluetoothLEMacroKitTests"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "BLEAssignedNumbersGeneratorTests"
-               BuildableName = "BLEAssignedNumbersGeneratorTests"
-               BlueprintName = "BLEAssignedNumbersGeneratorTests"
+               BlueprintIdentifier = "BLEInternalTests"
+               BuildableName = "BLEInternalTests"
+               BlueprintName = "BLEInternalTests"
                ReferencedContainer = "container:">
             </BuildableReference>
          </TestableReference>
@@ -207,16 +131,6 @@
                BlueprintIdentifier = "BLEMacroTests"
                BuildableName = "BLEMacroTests"
                BlueprintName = "BLEMacroTests"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "BLEInternalTests"
-               BuildableName = "BLEInternalTests"
-               BlueprintName = "BLEInternalTests"
                ReferencedContainer = "container:">
             </BuildableReference>
          </TestableReference>
@@ -232,25 +146,6 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "ble"
-            BuildableName = "ble"
-            BlueprintName = "ble"
-            ReferencedContainer = "container:">
-         </BuildableReference>
-      </BuildableProductRunnable>
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "BluetoothLEMacroKitGenerator"
-            BuildableName = "BluetoothLEMacroKitGenerator"
-            BlueprintName = "BluetoothLEMacroKitGenerator"
-            ReferencedContainer = "container:">
-         </BuildableReference>
-      </MacroExpansion>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -258,16 +153,15 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "ble"
-            BuildableName = "ble"
-            BlueprintName = "ble"
+            BlueprintIdentifier = "BLECommand"
+            BuildableName = "BLECommand"
+            BlueprintName = "BLECommand"
             ReferencedContainer = "container:">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
