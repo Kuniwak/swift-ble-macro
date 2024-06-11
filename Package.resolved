@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Kuniwak/swift-ble-assigned-numbers.git",
       "state" : {
-        "revision" : "340572c1cadd7bf3602b60b70657f496b8a55f5e",
-        "version" : "1.0.1"
+        "revision" : "0ecdf9a49cf8ee9670eabc29825817202f7a2c8f",
+        "version" : "2.0.0"
       }
     },
     {

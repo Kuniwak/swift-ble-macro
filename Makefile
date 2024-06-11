@@ -40,7 +40,7 @@ test-tvOS: Logs build/reports
 .PHONY: test-visionOS
 test-visionOS: Logs build/reports
 	# ====== Test on visionOS ======
-	"${XCODEBUILD_SCRIPTS_PATH}/test" "${SCHEME}" "xrOS-1-" "Apple Vision Pro " "Logs/xcodebuild-test-visionOS.log" "build/reports/junit-visionOS.xml"
+	"${XCODEBUILD_SCRIPTS_PATH}/test" "${SCHEME}" "xrOS-1-" "Apple Vision Pro" "Logs/xcodebuild-test-visionOS.log" "build/reports/junit-visionOS.xml"
 
 .PHONY: clean
 clean:
