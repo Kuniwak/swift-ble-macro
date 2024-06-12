@@ -40,10 +40,14 @@ let package = Package(
             name: "BLEModel",
             targets: ["BLEModel"]
         ),
+        .library(
+            name: "BLEModelStub",
+            targets: ["BLEModelStub"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/Kuniwak/swift-logger.git", .upToNextMajor(from: "1.1.0")),
-        .package(url: "https://github.com/Kuniwak/core-bluetooth-testable.git", .upToNextMajor(from: "3.0.0")),
+        .package(url: "https://github.com/Kuniwak/core-bluetooth-testable.git", .upToNextMajor(from: "4.0.0")),
         .package(url: "https://github.com/Kuniwak/swift-ble-assigned-numbers.git", .upToNextMajor(from: "2.0.0")),
         .package(url: "https://github.com/Kuniwak/MirrorDiffKit.git", .upToNextMajor(from: "6.0.0")),
         .package(url: "https://github.com/cezheng/Fuzi.git", .upToNextMajor(from: "3.1.3")),
@@ -53,56 +57,66 @@ let package = Package(
         .testTarget(
             name: "BLEInternalTests",
             dependencies: [
-                "BLEInternal",
-                .product(name: "Logger", package: "swift-logger"),
-                .product(name: "BLEAssignedNumbers", package: "swift-ble-assigned-numbers"),
+                .bleInternal,
+                .logger,
+                .bleAssignedNumbers,
             ]
         ),
         .target(
             name: "BLEMacro",
             dependencies: [
-                "BLEInternal",
-                "Fuzi",
+                .bleInternal,
+                .fuzi,
             ]
         ),
         .target(
             name: "BLECommand",
             dependencies: [
-                "BLEInternal",
+                .bleInternal,
             ]
         ),
         .target(
             name: "BLEModel",
             dependencies: [
-                "BLEInternal",
-                .product(name: "Logger", package: "swift-logger"),
-                .product(name: "CoreBluetoothTestable", package: "core-bluetooth-testable")
+                .bleInternal,
+                .logger,
+                .coreBluetoothTestable,
+            ]
+        ),
+        .target(
+            name: "BLEModelStub",
+            dependencies: [
+                .bleModel,
+                .bleInternal,
+                .logger,
+                .coreBluetoothTestable,
+                .coreBluetoothStub,
             ]
         ),
         .target(
             name: "BLEMacroCompiler",
             dependencies: [
-                "BLEInternal",
-                "BLEMacro",
-                "BLECommand",
-                .product(name: "BLEAssignedNumbers", package: "swift-ble-assigned-numbers"),
+                .bleInternal,
+                .bleMacro,
+                .bleCommand,
+                .bleAssignedNumbers,
             ]
         ),
         .target(
             name: "BLEInterpreter",
             dependencies: [
-                "BLEInternal",
-                "BLECommand",
-                .product(name: "CoreBluetoothTestable", package: "core-bluetooth-testable")
+                .bleInternal,
+                .bleCommand,
+                .coreBluetoothTestable,
             ]
         ),
         .testTarget(
             name: "BLEMacroTests",
             dependencies: [
-                "BLEInternal",
-                "BLEMacro",
-                "MirrorDiffKit",
-                .product(name: "BLEAssignedNumbers", package: "swift-ble-assigned-numbers"),
+                .bleInternal,
+                .bleMacro,
+                .mirrorDiffKit,
+                .bleAssignedNumbers,
             ],
             resources: [
                 .copy("Fixtures"),
@@ -111,13 +125,29 @@ let package = Package(
         .target(
             name: "BLEMacroEasy",
             dependencies: [
-                "BLEInternal",
-                "BLEMacro",
-                "BLEMacroCompiler",
-                "BLECommand",
-                "BLEInterpreter",
-                .product(name: "CoreBluetoothTestable", package: "core-bluetooth-testable")
+                .bleInternal,
+                .bleMacro,
+                .bleMacroCompiler,
+                .bleCommand,
+                .bleInterpreter,
+                .coreBluetoothTestable,
             ]
         )
     ]
 )
+
+
+private extension Target.Dependency {
+    static let bleInternal: Self = "BLEInternal"
+    static let bleMacro: Self = "BLEMacro"
+    static let bleMacroCompiler: Self = "BLEMacroCompiler"
+    static let bleCommand: Self = "BLECommand"
+    static let bleInterpreter: Self = "BLEInterpreter"
+    static let bleModel: Self = "BLEModel"
+    static let fuzi: Self = "Fuzi"
+    static let mirrorDiffKit: Self = "MirrorDiffKit"
+    static let logger: Self = .product(name: "Logger", package: "swift-logger")
+    static let coreBluetoothTestable: Self = .product(name: "CoreBluetoothTestable", package: "core-bluetooth-testable")
+    static let coreBluetoothStub: Self = .product(name: "CoreBluetoothStub", package: "core-bluetooth-testable")
+    static let bleAssignedNumbers: Self = .product(name: "BLEAssignedNumbers", package: "swift-ble-assigned-numbers")
+}
