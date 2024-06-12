@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Kuniwak/core-bluetooth-testable.git",
       "state" : {
-        "revision" : "6ca4c86520e806ddf48a539c49c039276a279a8c",
-        "version" : "2.0.0"
+        "revision" : "5de9007a619459bce64b83e28a6315bad2dfcf4f",
+        "version" : "3.0.0"
       }
     },
     {
