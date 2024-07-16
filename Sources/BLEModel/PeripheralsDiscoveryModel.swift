@@ -182,25 +182,3 @@ public class PeripheralsDiscoveryModelLogger: Subscriber, Cancellable {
         cancellables.removeAll()
     }
 }
-
-
-extension CBManagerState: CustomStringConvertible {
-    public var description: String {
-        switch self {
-        case .poweredOff:
-            return "poweredOff"
-        case .poweredOn:
-            return "poweredOn"
-        case .resetting:
-            return "resetting"
-        case .unauthorized:
-            return "unauthorized"
-        case .unsupported:
-            return "unsupporeted"
-        case .unknown:
-            return "unknown"
-        default:
-            return "\(self)"
-        }
-    }
-}
