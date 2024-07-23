@@ -2,7 +2,7 @@ import Fuzi
 import BLEInternal
 
 
-public struct AssertValue: Equatable {
+public struct AssertValue: Equatable, Codable, Sendable {
     public let description: String?
     public let value: Value
 

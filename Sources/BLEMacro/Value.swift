@@ -3,7 +3,7 @@ import Fuzi
 import BLEInternal
 
 
-public enum Value: Equatable {
+public enum Value: Equatable, Codable, Sendable {
     typealias RawValue = String
 
     case data(data: Data, encoding: HexEncoding)

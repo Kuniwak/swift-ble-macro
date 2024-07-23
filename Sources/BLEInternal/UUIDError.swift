@@ -1,4 +1,4 @@
-public struct UUIDError: Error, Equatable, CustomStringConvertible {
+public struct UUIDError: Error, Equatable, CustomStringConvertible, Codable, Sendable {
     public let description: String
     
     public init(_ description: String) {

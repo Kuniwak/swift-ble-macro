@@ -1,7 +1,7 @@
 import Fuzi
 
 
-public struct Icon: RawRepresentable, Equatable {
+public struct Icon: RawRepresentable, Equatable, Codable, Sendable {
     public typealias RawValue = String
 
     public let rawValue: String

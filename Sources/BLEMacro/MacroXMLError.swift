@@ -1,7 +1,7 @@
 import BLEInternal
 
 
-public enum MacroXMLError: Error, Equatable {
+public enum MacroXMLError: Error, Equatable, Codable, Sendable {
     case bothValueAndValueStringAttributesPresent(element: String?)
     case malformedSleepTimeoutAttribute(element: String?, timeoutString: String)
     case malformedUUIDAttribute(element: String?, attribute: String, uuidString: String)

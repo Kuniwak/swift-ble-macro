@@ -1,7 +1,7 @@
 import Fuzi
 
 
-public struct Property: Equatable {
+public struct Property: Equatable, Codable, Sendable {
     public let name: PropertyName
     public let requirement: PropertyRequirement?
 

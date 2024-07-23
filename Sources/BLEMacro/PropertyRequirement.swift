@@ -1,7 +1,7 @@
 import Fuzi
 
 
-public struct PropertyRequirement: RawRepresentable, Equatable, Codable {
+public struct PropertyRequirement: RawRepresentable, Equatable, Codable, Sendable {
     public typealias RawValue = String
     
     public let rawValue: String

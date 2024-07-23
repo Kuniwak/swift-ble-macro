@@ -2,7 +2,7 @@ import struct Foundation.UUID
 import Fuzi
 
 
-public struct AssertDescriptor: Equatable {
+public struct AssertDescriptor: Equatable, Codable, Sendable {
     public let description: String?
     public let uuid: UUID
 
