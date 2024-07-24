@@ -1,7 +1,7 @@
 import Fuzi
 
 
-public enum Operation: Equatable {
+public enum Operation: Equatable, Codable, Sendable {
     case write(Write)
     case writeDescriptor(WriteDescriptor)
     case read(Read)

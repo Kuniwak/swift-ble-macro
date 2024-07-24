@@ -1,7 +1,7 @@
 import Foundation
 
 
-public enum HexEncoding: String, Equatable {
+public enum HexEncoding: String, Equatable, Codable, Sendable {
     case upper = "%02hhX"
     case lower = "%02hhx"
 

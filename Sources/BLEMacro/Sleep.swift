@@ -1,7 +1,7 @@
 import Fuzi
 
 
-public struct Sleep: Equatable {
+public struct Sleep: Equatable, Codable, Sendable {
     public let description: String?
     public let timeout: UInt
     

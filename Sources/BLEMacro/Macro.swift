@@ -1,7 +1,7 @@
 import Fuzi
 
 
-public struct Macro: Equatable {
+public struct Macro: Equatable, Codable, Sendable {
     public let name: String
     public let icon: Icon
     public let assertServices: [AssertService]

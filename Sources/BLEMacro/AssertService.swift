@@ -3,7 +3,7 @@ import Fuzi
 import BLEInternal
 
 
-public struct AssertService: Equatable {
+public struct AssertService: Equatable, Codable, Sendable {
     public let description: String?
     public let uuid: UUID
     public let assertCharacteristics: [AssertCharacteristic]

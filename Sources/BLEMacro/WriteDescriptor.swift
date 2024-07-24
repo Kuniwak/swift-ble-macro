@@ -2,7 +2,7 @@ import struct Foundation.UUID
 import Fuzi
 
 
-public struct WriteDescriptor: Equatable {
+public struct WriteDescriptor: Equatable, Codable, Sendable {
     public let description: String?
     public let uuid: UUID
     public let serviceUUID: UUID

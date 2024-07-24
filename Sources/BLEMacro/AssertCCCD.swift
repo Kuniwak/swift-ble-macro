@@ -1,7 +1,7 @@
 import Fuzi
 
 
-public struct AssertCCCD: Equatable {
+public struct AssertCCCD: Equatable, Codable, Sendable {
     public let description: String?
 
 

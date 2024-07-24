@@ -1,4 +1,4 @@
-public enum HexEncodingError: Error, Equatable {
+public enum HexEncodingError: Error, Equatable, Codable, Sendable {
     case oddNumberOfCharacters(hexString: String)
     case invalidCharacter(hexString: String)
     case mixedCase(hexString: String)

@@ -1,4 +1,4 @@
-public struct XMLElement {
+public struct XMLElement: Equatable, Codable, Sendable {
     public var tag: String
     public var attributes: [String: String]
     public var children: [XMLElement]
@@ -11,7 +11,7 @@ public struct XMLElement {
 }
 
 
-public class XMLWriter {
+public final class XMLWriter {
     private var stream: TextOutputStream
     
     

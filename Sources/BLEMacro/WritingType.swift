@@ -1,7 +1,7 @@
 import Fuzi
 
 
-public struct WritingType: RawRepresentable, Equatable {
+public struct WritingType: RawRepresentable, Hashable, Codable, Sendable {
     public typealias RawValue = String
     public let rawValue: String
     
