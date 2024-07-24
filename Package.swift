@@ -47,7 +47,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/Kuniwak/swift-logger.git", .upToNextMajor(from: "2.0.0")),
-        .package(url: "https://github.com/Kuniwak/core-bluetooth-testable.git", .upToNextMajor(from: "6.0.0")),
+        .package(url: "https://github.com/Kuniwak/core-bluetooth-testable.git", .upToNextMajor(from: "6.1.0")),
         .package(url: "https://github.com/Kuniwak/swift-ble-assigned-numbers.git", .upToNextMajor(from: "2.0.0")),
         .package(url: "https://github.com/Kuniwak/MirrorDiffKit.git", .upToNextMajor(from: "6.0.0")),
         .package(url: "https://github.com/cezheng/Fuzi.git", .upToNextMajor(from: "3.1.3")),
@@ -103,9 +103,19 @@ let package = Package(
             ]
         ),
         .target(
-            name: "BLEInterpreter",
+            name: "BLETasks",
             dependencies: [
                 .bleInternal,
+                .logger,
+                .coreBluetoothTestable,
+            ]
+        ),
+        .target(
+            name: "BLEInterpreter",
+            dependencies: [
+                .logger,
+                .bleInternal,
+                .bleTasks,
                 .bleCommand,
                 .coreBluetoothTestable,
             ]
@@ -129,6 +139,7 @@ let package = Package(
                 .bleMacro,
                 .bleMacroCompiler,
                 .bleCommand,
+                .bleTasks,
                 .bleInterpreter,
                 .coreBluetoothTestable,
             ]
@@ -144,6 +155,7 @@ private extension Target.Dependency {
     static let bleCommand: Self = "BLECommand"
     static let bleInterpreter: Self = "BLEInterpreter"
     static let bleModel: Self = "BLEModel"
+    static let bleTasks: Self = "BLETasks"
     static let fuzi: Self = "Fuzi"
     static let mirrorDiffKit: Self = "MirrorDiffKit"
     static let logger: Self = .product(name: "Logger", package: "swift-logger")
