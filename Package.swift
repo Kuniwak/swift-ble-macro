@@ -44,6 +44,10 @@ let package = Package(
             name: "BLEModelStub",
             targets: ["BLEModelStub"]
         ),
+        .library(
+            name: "BLETasks",
+            targets: ["BLETasks"]
+        )
     ],
     dependencies: [
         .package(url: "https://github.com/Kuniwak/swift-logger.git", .upToNextMajor(from: "2.0.0")),
