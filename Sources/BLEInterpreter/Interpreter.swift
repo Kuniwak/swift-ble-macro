@@ -3,6 +3,7 @@ import CoreBluetooth
 import CoreBluetoothTestable
 import BLEInternal
 import BLECommand
+import BLETasks
 import Logger
 
 
@@ -25,13 +26,13 @@ public protocol InterpreterProtocol {
 
 open class Interpreter: InterpreterProtocol {
     public private(set) var environment: Environment
-    public let peripheral: any PeripheralProtocol
+    private let peripheral: any PeripheralTasksProtocol
     private let logger: any LoggerProtocol
     private let timeout: TimeInterval = 5
     private let readHandler: ((Data) -> Void)?
 
     
-    public init(startsWith environment: Environment, onPeripheral peripheral: any PeripheralProtocol, loggingBy logger: any LoggerProtocol, _ readHandler: ((Data) -> Void)? = nil) {
+    public init(startsWith environment: Environment, onPeripheral peripheral: any PeripheralTasksProtocol, loggingBy logger: any LoggerProtocol, _ readHandler: ((Data) -> Void)? = nil) {
         self.environment = environment
         self.peripheral = peripheral
         self.logger = logger
@@ -39,7 +40,7 @@ open class Interpreter: InterpreterProtocol {
     }
     
     
-    public init(onPeripheral peripheral: any PeripheralProtocol, loggingBy logger: any LoggerProtocol, _ readHandler: ((Data) -> Void)? = nil) {
+    public init(onPeripheral peripheral: any PeripheralTasksProtocol, loggingBy logger: any LoggerProtocol, _ readHandler: ((Data) -> Void)? = nil) {
         self.environment = Environment(services: [:], register: nil)
         self.peripheral = peripheral
         self.logger = logger
@@ -142,54 +143,37 @@ open class Interpreter: InterpreterProtocol {
         logger.trace()
         
         if let serviceEntry = environment.serviceEntries[cmd.serviceUUID] {
-            logger.debug("service \(cmd.serviceUUID) already found")
+            logger.debug("service cache \(cmd.serviceUUID) found")
             return .success(serviceEntry)
         }
         
-        logger.debug("discovering service \(cmd.serviceUUID)")
-        let result = await Tasks.timeout(duration: timeout) {
-            await self.waitService(uuid: cmd.serviceUUID)
-        }
-        switch result {
-        case .failure(let error):
-            return .failure(.init(wrapping: error))
-        case .success(.failure(let error)):
-            return .failure(error)
-        case .success(.success(let service)):
-            let serviceEntry = ServiceEntry(service: service, characteristics: [:])
-            self.environment.serviceEntries[cmd.serviceUUID] = serviceEntry
-            return .success(serviceEntry)
-        }
+        logger.debug("service cache \(cmd.serviceUUID) not found. discovering...")
+        return await self.waitService(uuid: cmd.serviceUUID, timeout: timeout)
+            .map { service in
+                let serviceEntry = ServiceEntry(service: service, characteristics: [:])
+                self.environment.serviceEntries[cmd.serviceUUID] = serviceEntry
+                return serviceEntry
+            }
     }
     
     
-    public func waitService(uuid: CBUUID) async -> Result<any ServiceProtocol, CommandExecutionFailure> {
+    public func waitService(uuid: CBUUID, timeout: TimeInterval) async -> Result<any ServiceProtocol, CommandExecutionFailure> {
         let logger = self.logger
         logger.trace()
-
-        return await withCheckedContinuation { continuation in
-            var cancellables = Set<AnyCancellable>()
-            peripheral.didDiscoverServices
-                .sink(receiveValue: { resp in
-                    defer { cancellables.removeAll() }
-                    
-                    guard let services = resp.services else {
-                        logger.error("failed to discover services: \(resp.error == nil ? "nil" : "\(resp.error!)")")
-                        continuation.resume(returning: .failure(.init(wrapping: resp.error)))
-                        return
-                    }
-                    
-                    guard let service = services.first(where: { $0.uuid == uuid }) else {
-                        logger.debug("service \(uuid) not found")
-                        continuation.resume(returning: .failure(.init(description: "Service \(uuid) not found")))
-                        return
-                    }
-                    
-                    logger.debug("service \(uuid) found")
-                    continuation.resume(returning: .success(service))
-                })
-                .store(in: &cancellables)
-            peripheral.discoverServices([uuid])
+        
+        let result = await Tasks.timeout(duration: timeout) {
+            return await peripheral.discoverService(searching: uuid)
+        }
+        switch result {
+        case .failure(let error):
+            logger.error("timeout: \(error.description)")
+            return .failure(.init(wrapping: error))
+        case .success(.failure(let error)):
+            logger.error("failed to discover service: \(error.description)")
+            return .failure(.init(wrapping: error))
+        case .success(.success(let service)):
+            logger.debug("service \(uuid) found")
+            return .success(service)
         }
     }
     
@@ -202,57 +186,40 @@ open class Interpreter: InterpreterProtocol {
             return .failure(error)
         case .success(let serviceEntry):
             if let characteristicEntry = serviceEntry.characteristics[cmd.characteristicUUID] {
-                logger.debug("characteristic \(cmd.characteristicUUID) already found")
+                logger.debug("characteristic cache \(cmd.characteristicUUID) found")
                 return .success((serviceEntry, characteristicEntry))
             }
             
-            logger.debug("discovering characteristic \(cmd.characteristicUUID)")
-            
-            let result = await Tasks.timeout(duration: timeout) {
-                await self.waitCharacteristic(for: cmd.characteristicUUID, with: serviceEntry.service)
-            }
-            switch result {
-            case .failure(let error):
-                return .failure(.init(wrapping: error))
-            case .success(.failure(let error)):
-                return .failure(error)
-            case .success(.success(let characteristic)):
-                var newServiceEntry = serviceEntry
-                let characteristicEntry = CharacteristicEntry(characteristic: characteristic, descriptors: [:])
-                newServiceEntry.characteristics[cmd.characteristicUUID] = characteristicEntry
-                environment.serviceEntries[cmd.serviceUUID] = newServiceEntry
-                return .success((newServiceEntry, characteristicEntry))
-            }
+            logger.debug("characteristic cache \(cmd.characteristicUUID) not found. discovering...")
+            return await self.waitCharacteristic(for: cmd.characteristicUUID, with: serviceEntry.service, timeout: timeout)
+                .map { characteristic in
+                    let characteristicEntry = CharacteristicEntry(characteristic: characteristic, descriptors: [:])
+                    var newServiceEntry = serviceEntry
+                    newServiceEntry.characteristics[cmd.characteristicUUID] = characteristicEntry
+                    environment.serviceEntries[cmd.serviceUUID] = newServiceEntry
+                    return (newServiceEntry, characteristicEntry)
+                }
         }
     }
     
     
-    public func waitCharacteristic(for uuid: CBUUID, with service: any ServiceProtocol) async -> Result<any CharacteristicProtocol, CommandExecutionFailure> {
+    public func waitCharacteristic(for uuid: CBUUID, with service: any ServiceProtocol, timeout: TimeInterval) async -> Result<any CharacteristicProtocol, CommandExecutionFailure> {
         let logger = self.logger
         logger.trace()
         
-        return await withCheckedContinuation { continuation in
-            var subscription: AnyCancellable?
-            subscription = peripheral.didDiscoverCharacteristicsForService
-                .sink(receiveValue: { resp in
-                    defer { subscription?.cancel() }
-                    
-                    guard let characteristics = resp.characteristics else {
-                        logger.error("failed to discover characteristics: \(resp.error == nil ? "nil" : "\(resp.error!)")")
-                        continuation.resume(returning: .failure(.init(wrapping: resp.error)))
-                        return
-                    }
-                    
-                    guard let characteristic = characteristics.first(where: { $0.uuid == uuid }) else {
-                        logger.debug("characteristic \(uuid) not found")
-                        continuation.resume(returning: .failure(.init(description: "Characteristic \(uuid) not found")))
-                        return
-                    }
-                    
-                    logger.debug("characteristic \(uuid) found")
-                    continuation.resume(returning: .success(characteristic))
-                })
-            peripheral.discoverCharacteristics([uuid], for: service)
+        let result = await Tasks.timeout(duration: timeout) {
+            await peripheral.discoverCharacteristic(searching: uuid, forService: service)
+        }
+        switch result {
+        case .failure(let error):
+            logger.error("timeout: \(error.description)")
+            return .failure(.init(wrapping: error))
+        case .success(.failure(let error)):
+            logger.error("failed to discover characteristics: \(error.description)")
+            return .failure(.init(wrapping: error))
+        case .success(.success(let characteristic)):
+            logger.debug("characteristic \(uuid) found")
+            return .success(characteristic)
         }
     }
     
@@ -265,59 +232,45 @@ open class Interpreter: InterpreterProtocol {
             return .failure(error)
         case .success((serviceEntry: let serviceEntry, characteristicEntry: let characteristicEntry)):
             if let descriptor = characteristicEntry.descriptors[cmd.descriptorUUID] {
-                logger.debug("Descriptor \(cmd.descriptorUUID) already found")
+                logger.debug("Descriptor cache \(cmd.descriptorUUID) found")
                 return .success((serviceEntry: serviceEntry, characteristicEntry: characteristicEntry, descriptor: descriptor))
             }
             
-            logger.debug("Discovering descriptor \(cmd.descriptorUUID)")
-            let result = await Tasks.timeout(duration: timeout) {
-                await self.waitDescriptor(for: cmd.descriptorUUID, withCharacteristic: characteristicEntry.characteristic, withService: serviceEntry.service)
-            }
-            switch result {
-            case .failure(let error):
-                return .failure(.init(wrapping: error))
-            case .success(.failure(let error)):
-                return .failure(error)
-            case .success(.success(let descriptor)):
-                var newCharacteristicEntry = characteristicEntry
-                newCharacteristicEntry.descriptors[cmd.descriptorUUID] = descriptor
-                var newServiceEntry = serviceEntry
-                newServiceEntry.characteristics[cmd.characteristicUUID] = newCharacteristicEntry
-                environment.serviceEntries[cmd.serviceUUID] = newServiceEntry
-                return .success((newServiceEntry, newCharacteristicEntry, descriptor))
-            }
+            logger.debug("Descriptor cache \(cmd.descriptorUUID) not found. discovering...")
+            return await waitDescriptor(for: cmd.descriptorUUID, withCharacteristic: characteristicEntry.characteristic, withService: serviceEntry.service, timeout: timeout)
+                .map { descriptor in
+                    var newCharacteristicEntry = characteristicEntry
+                    newCharacteristicEntry.descriptors[cmd.descriptorUUID] = descriptor
+                    var newServiceEntry = serviceEntry
+                    newServiceEntry.characteristics[cmd.characteristicUUID] = newCharacteristicEntry
+                    environment.serviceEntries[cmd.serviceUUID] = newServiceEntry
+                    return (newServiceEntry, newCharacteristicEntry, descriptor)
+                }
         }
     }
     
     
-    public func waitDescriptor(for uuid: CBUUID, withCharacteristic characteristic: any CharacteristicProtocol, withService service: any ServiceProtocol) async -> Result<any DescriptorProtocol, CommandExecutionFailure> {
+    public func waitDescriptor(
+        for uuid: CBUUID,
+        withCharacteristic characteristic: any CharacteristicProtocol,
+        withService service: any ServiceProtocol,
+        timeout: TimeInterval
+    ) async -> Result<any DescriptorProtocol, CommandExecutionFailure> {
         logger.trace()
         
-        return await withCheckedContinuation { continuation in
-            var cancellables = Set<AnyCancellable>()
-            peripheral.didDiscoverDescriptorsForCharacteristic
-                .sink(receiveValue: { [weak self] resp in
-                    defer { cancellables.removeAll() }
-                    
-                    guard let self else { return }
-
-                    guard let descriptors = resp.descriptors else {
-                        self.logger.error("failed to discover descriptors: \(resp.error == nil ? "nil" : "\(resp.error!)")")
-                        continuation.resume(returning: .failure(.init(wrapping: resp.error)))
-                        return
-                    }
-                    
-                    guard let descriptor = descriptors.first(where: { $0.uuid == uuid }) else {
-                        self.logger.debug("descriptor \(uuid) not found")
-                        continuation.resume(returning: .failure(.init(description: "Descriptor \(uuid) not found")))
-                        return
-                    }
-                    
-                    self.logger.debug("descriptor \(uuid) found")
-                    continuation.resume(returning: .success(descriptor))
-                })
-                .store(in: &cancellables)
-            peripheral.discoverDescriptors(for: characteristic)
+        let result = await Tasks.timeout(duration: timeout) {
+            await peripheral.discoverDescriptor(searching: uuid, forCharacteristic: characteristic)
+        }
+        switch result {
+        case .failure(let error):
+            logger.error("timeout: \(error.description)")
+            return .failure(.init(wrapping: error))
+        case .success(.failure(let error)):
+            logger.error("failed to discover descriptor: \(error.description)")
+            return .failure(.init(wrapping: error))
+        case .success(.success(let descriptor)):
+            logger.debug("descriptor \(uuid) found")
+            return .success(descriptor)
         }
     }
 
@@ -345,35 +298,16 @@ open class Interpreter: InterpreterProtocol {
         
         switch await assertCharacteristic(.init(characteristicUUID: cmd.characteristicUUID, serviceUUID: cmd.serviceUUID)) {
         case .failure(let error):
+            logger.error("failed to discover characteristic: \(error.description)")
             return .failure(error)
         case .success((_, let characteristicEntry)):
-            return await withCheckedContinuation { continuation in
-                switch cmd.writeType {
-                case .withResponse:
-                    var cancellables = Set<AnyCancellable>()
-                    peripheral.didWriteValueForCharacteristic
-                        .sink(receiveValue: { [weak self] resp in
-                            defer { cancellables.removeAll() }
-                            guard let self else { return }
-                            
-                            if let error = resp.error {
-                                self.logger.error("failed to write value: \(error)")
-                                continuation.resume(returning: .failure(.init(wrapping: error)))
-                                return
-                            }
-                            
-                            self.logger.debug("value written \(HexEncoding.upper.encode(data: cmd.value))")
-                            continuation.resume(returning: .success(()))
-                        })
-                        .store(in: &cancellables)
-                    peripheral.writeValue(cmd.value, for: characteristicEntry.characteristic, type: .withResponse)
-                case .withoutResponse:
-                    peripheral.writeValue(cmd.value, for: characteristicEntry.characteristic, type: .withoutResponse)
-                    continuation.resume(returning: .success(()))
-                default:
-                    continuation.resume(returning: .failure(.init(description: "unsupported write type: \(cmd.writeType)")))
-                }
-            }
+            return await peripheral
+                .write(
+                    forCharacteristic: characteristicEntry.characteristic,
+                    value: cmd.value,
+                    writeType: cmd.writeType
+                )
+                .mapError(CommandExecutionFailure.init(wrapping:))
         }
     }
     
@@ -384,9 +318,14 @@ open class Interpreter: InterpreterProtocol {
         switch await assertDescriptor(.init(descriptorUUID: cmd.descriptorUUID, characteristicUUID: cmd.characteristicUUID, serviceUUID: cmd.serviceUUID)) {
         case .failure(let error):
             return .failure(error)
-        case .success((_, _, let descriptor)):
-            peripheral.writeValue(cmd.value, for: descriptor)
-            return .success(())
+        case .success((_, let characteristic, let descriptor)):
+            return await peripheral
+                .write(
+                    forDescriptor: descriptor,
+                    onCharacteristic: characteristic.characteristic,
+                    value: cmd.value
+                )
+                .mapError(CommandExecutionFailure.init(wrapping:))
         }
     }
     
@@ -398,32 +337,15 @@ open class Interpreter: InterpreterProtocol {
         case .failure(let error):
             return .failure(error)
         case .success((_, let characteristicEntry)):
-            return await withCheckedContinuation { continuation in
-                var cancellables = Set<AnyCancellable>()
-                peripheral.didUpdateValueForCharacteristic
-                    .sink(receiveValue: { [weak self] resp in
-                        defer { cancellables.removeAll() }
-                        guard let self else { return }
-                        
-                        if let error = resp.error {
-                            self.logger.error("failed to update value: \(error)")
-                            continuation.resume(returning: .failure(.init(wrapping: error)))
-                            return
-                        }
-
-                        guard let value = resp.characteristic.value else {
-                            self.logger.debug("read but value is nil")
-                            continuation.resume(returning: .failure(.init(description: "read but value is nil")))
-                            return
-                        }
-
-                        self.logger.debug("received: \(HexEncoding.upper.encode(data: value))")
-                        self.environment.register = .value(value)
-                        self.readHandler?(value)
-                        continuation.resume(returning: .success(value))
-                    })
-                    .store(in: &cancellables)
-                peripheral.readValue(for: characteristicEntry.characteristic)
+            switch await peripheral.read(fromCharacteristic: characteristicEntry.characteristic) {
+            case .failure(let error):
+                logger.debug("Failed to read: \(error)")
+                return .failure(.init(wrapping: error))
+            case .success(let value):
+                logger.debug("Received: \(HexEncoding.upper.encode(data: value))")
+                readHandler?(value)
+                environment.register = .value(value)
+                return .success(value)
             }
         }
     }
@@ -466,32 +388,9 @@ open class Interpreter: InterpreterProtocol {
         case .failure(let error):
             return .failure(error)
         case .success((_, let characteristicEntry)):
-            return await withCheckedContinuation { continuation in
-                var cancellables = Set<AnyCancellable>()
-                peripheral.didUpdateValueForCharacteristic
-                    .sink(receiveValue: { [weak self] resp in
-                        defer { cancellables.removeAll() }
-                        guard let self else { return }
-                        
-                        if let error = resp.error {
-                            self.logger.error("failed to update value: \(error)")
-                            continuation.resume(returning: .failure(.init(wrapping: error)))
-                            return
-                        }
-                        
-                        guard let value = resp.characteristic.value else {
-                            self.logger.debug("read but value is nil")
-                            continuation.resume(returning: .failure(.init(description: "read but value is nil")))
-                            return
-                        }
-
-                        self.logger.debug("received: \(HexEncoding.upper.encode(data: value))")
-                        self.environment.register = .value(value)
-                        continuation.resume(returning: .success(()))
-                    })
-                    .store(in: &cancellables)
-                peripheral.setNotifyValue(true, for: characteristicEntry.characteristic)
-            }
+            return await peripheral
+                .waitForNotification(onCharacteristic: characteristicEntry.characteristic)
+                .mapError(CommandExecutionFailure.init(wrapping:))
         }
     }
 }

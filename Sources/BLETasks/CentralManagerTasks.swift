@@ -6,30 +6,48 @@ import Logger
 
 
 public protocol CentralManagerTasksProtocol {
-    func connect(uuid: UUID) async -> Result<any PeripheralProtocol, DiscoveryError>
-    func discover(uuid: UUID) async -> Result<any PeripheralProtocol, DiscoveryError>
+    func connect(uuid: UUID) async -> Result<any PeripheralProtocol, CentralManagerTaskFailure>
+    func discover(uuid: UUID) async -> Result<any PeripheralProtocol, CentralManagerTaskFailure>
+}
+
+
+public struct CentralManagerTaskFailure: Error, Equatable, Sendable, Codable, CustomStringConvertible {
+    public let description: String
+    
+    
+    public init(_ description: String) {
+        self.description = description
+    }
+    
+    
+    public init(wrapping error: any Error) {
+        self.description = "\(error)"
+    }
+    
+    
+    public init(wrapping error: (any Error)?) {
+        self.description = error.map { "\($0)" } ?? "nil"
+    }
 }
 
 
 public class CentralManagerTasks: CentralManagerTasksProtocol {
-    private let logger: any LoggerProtocol
     private let centralManager: any CentralManagerProtocol
     
     
-    public init(loggingBy logger: any LoggerProtocol, centralManager: any CentralManagerProtocol) {
-        self.logger = logger
+    public init(centralManager: any CentralManagerProtocol) {
         self.centralManager = centralManager
     }
     
     
-    open func connect(uuid: UUID) async -> Result<any PeripheralProtocol, DiscoveryError> {
+    open func connect(uuid: UUID) async -> Result<any PeripheralProtocol, CentralManagerTaskFailure> {
         switch await discover(uuid: uuid) {
         case .failure(let error):
-            return .failure(error)
+            return .failure(.init(wrapping: error))
         case .success(let peripheral):
             switch await waitConnected(peripheral: peripheral) {
             case .failure(let error):
-                return .failure(error)
+                return .failure(.init(wrapping: error))
             case .success:
                 return .success(peripheral)
             }
@@ -37,7 +55,7 @@ public class CentralManagerTasks: CentralManagerTasksProtocol {
     }
     
     
-    private func waitConnected(peripheral: any PeripheralProtocol) async -> Result<Void, DiscoveryError> {
+    private func waitConnected(peripheral: any PeripheralProtocol) async -> Result<Void, CentralManagerTaskFailure> {
         return await withCheckedContinuation { continuation in
             var cancellables = Set<AnyCancellable>()
             
@@ -62,7 +80,7 @@ public class CentralManagerTasks: CentralManagerTasksProtocol {
     }
 
     
-    public func discover(uuid: UUID) async -> Result<any PeripheralProtocol, DiscoveryError> {
+    public func discover(uuid: UUID) async -> Result<any PeripheralProtocol, CentralManagerTaskFailure> {
         switch await waitUntilPowerOn() {
         case .failure(let error):
             return .failure(error)
@@ -72,13 +90,13 @@ public class CentralManagerTasks: CentralManagerTasksProtocol {
     }
     
     
-    private func waitDiscover(uuid: UUID, timeout: TimeInterval) async -> Result<any PeripheralProtocol, DiscoveryError> {
+    private func waitDiscover(uuid: UUID, timeout: TimeInterval) async -> Result<any PeripheralProtocol, CentralManagerTaskFailure> {
         let result = await Tasks.timeout(duration: timeout) {
             await self.waitDiscover(uuid: uuid)
         }
         switch result {
         case .failure(let error):
-            return .failure(DiscoveryError(wrapping: error))
+            return .failure(.init(wrapping: error))
         case .success(.failure(let error)):
             return .failure(error)
         case .success(.success(let peripheral)):
@@ -87,7 +105,7 @@ public class CentralManagerTasks: CentralManagerTasksProtocol {
     }
     
     
-    private func waitDiscover(uuid: UUID) async -> Result<any PeripheralProtocol, DiscoveryError> {
+    private func waitDiscover(uuid: UUID) async -> Result<any PeripheralProtocol, CentralManagerTaskFailure> {
         return await withCheckedContinuation { continuation in
             var cancellables = Set<AnyCancellable>()
             let centralManager = self.centralManager
@@ -112,56 +130,28 @@ public class CentralManagerTasks: CentralManagerTasksProtocol {
     }
 
     
-    private func waitUntilPowerOn() async -> Result<Void, DiscoveryError> {
+    private func waitUntilPowerOn() async -> Result<Void, CentralManagerTaskFailure> {
         return await withCheckedContinuation { continuation in
             var cancellables = Set<AnyCancellable>()
-            let logger = self.logger
             
             self.centralManager.didUpdateState
                 .sink(receiveValue: { state in
                     defer { cancellables.removeAll() }
                     
-                    logger.debug("Bluetooth state: \(state)")
-                    
                     switch state {
                     case .poweredOn:
                         continuation.resume(returning: .success(()))
                     case .poweredOff:
-                        continuation.resume(returning: .failure(DiscoveryError(description: "Bluetooth is powered off")))
+                        continuation.resume(returning: .failure(.init("Bluetooth is powered off")))
                     case .unauthorized:
-                        continuation.resume(returning: .failure(DiscoveryError(description: "Bluetooth is unauthorized")))
+                        continuation.resume(returning: .failure(.init("Bluetooth is unauthorized")))
                     case .unsupported:
-                        continuation.resume(returning: .failure(DiscoveryError(description: "Bluetooth is unsupported")))
+                        continuation.resume(returning: .failure(.init("Bluetooth is unsupported")))
                     default:
-                        logger.debug("Bluetooth state is not handled: \(state)")
                         break
                     }
                 })
                 .store(in: &cancellables)
-        }
-    }
-}
-
-
-public struct DiscoveryError: Error, CustomStringConvertible {
-    public let description: String
-    
-    
-    public init(description: String) {
-        self.description = description
-    }
-    
-    
-    public init(wrapping error: any Error) {
-        self.description = "\(error)"
-    }
-    
-    
-    public init(wrapping error: (any Error)?) {
-        if let error = error {
-            self.description = "\(error)"
-        } else {
-            self.description = "nil"
         }
     }
 }

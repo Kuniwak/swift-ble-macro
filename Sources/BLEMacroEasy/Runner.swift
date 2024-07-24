@@ -7,6 +7,7 @@ import BLEMacro
 import BLEMacroCompiler
 import BLEInterpreter
 import BLEInternal
+import BLETasks
 import CoreBluetoothTestable
 import Logger
 
@@ -29,10 +30,11 @@ private func run(macroXML: XMLDocument, on peripheralUUID: UUID, loggingTo logDs
     let macro = try MacroXMLParser.parse(xml: macroXML).get()
     let commands = try Compiler(loggingBy: logger).compile(macro: macro).get()
     let central = CentralManager(loggingBy: logger)
-    let centralManagerTasks = CentralManagerTasks(loggingBy: logger, centralManager: central)
+    let centralManagerTasks = CentralManagerTasks(centralManager: central)
     let peripheral = try await centralManagerTasks.connect(uuid: peripheralUUID).get()
     defer { central.cancelPeripheralConnection(peripheral) }
+    let peripheralTasks = PeripheralTasks(peripheral: peripheral)
 
-    let interpreter = Interpreter(onPeripheral: peripheral, loggingBy: logger, readHandler)
+    let interpreter = Interpreter(onPeripheral: peripheralTasks, loggingBy: logger, readHandler)
     try await interpreter.interpret(commands: commands).get()
 }
