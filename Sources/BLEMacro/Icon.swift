@@ -166,4 +166,78 @@ public struct Icon: RawRepresentable, Equatable, Codable, Sendable {
             return .failure(.notSupportedIcon(icon: iconString))
         }
     }
+    
+    
+    public func xmlAttribute() -> MacroXMLAttribute {
+        return MacroXMLAttribute(name: Icon.attribute, value: rawValue)
+    }
+}
+
+
+extension Icon: CustomStringConvertible {
+    public var description: String {
+        return rawValue
+    }
+}
+
+
+extension Icon: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return rawValue
+    }
+}
+
+
+extension Icon: CaseIterable {
+    public static var allCases: [Icon] {
+        [
+            .left,
+            .up,
+            .home,
+            .down,
+            .right,
+            .rewind,
+            .play,
+            .pause,
+            .stop,
+            .forward,
+            .magic,
+            .physicalWeb,
+            .eddystone,
+            .nordic,
+            .lock,
+            .alarm,
+            .settings,
+            .bluetooth,
+            .wifi,
+            .star,
+            .plus,
+            .minus,
+            .brightnessHigh,
+            .brightnessLow,
+            .download,
+            .upload,
+            .print,
+            .flash,
+            .flashOff,
+            .ledOn,
+            .ledOff,
+            .battery,
+            .info,
+            .message,
+            .rocket,
+            .parachute,
+            .pikachu,
+            .number1,
+            .number2,
+            .number3,
+            .number4,
+            .number5,
+            .number6,
+            .number7,
+            .number8,
+            .number9,
+            .close
+        ]
+    }
 }

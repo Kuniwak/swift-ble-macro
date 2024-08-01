@@ -67,4 +67,25 @@ public struct Macro: Equatable, Codable, Sendable {
             )
         }
     }
+    
+    
+    public func xml() -> MacroXMLElement {
+        var attributes = [MacroXMLAttribute]()
+        
+        attributes.append(MacroXMLAttribute(name: Macro.nameAttribute, value: name))
+        attributes.append(MacroXMLAttribute(name: Macro.iconAttribute, value: icon.rawValue))
+        
+        return MacroXMLElement(
+            tag: Macro.name,
+            attributes: attributes,
+            children: assertServices.map { $0.xml() } + operations.map { $0.xml() }
+        )
+    }
+}
+
+
+extension Macro: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return "(name: \(name), icon: \(icon), assertServices: [\(assertServices.map(\.debugDescription).joined(separator: ", "))], operations: [\(operations.map(\.debugDescription).joined(separator: ", "))])"
+    }
 }

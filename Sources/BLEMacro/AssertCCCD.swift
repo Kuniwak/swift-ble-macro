@@ -25,17 +25,24 @@ public struct AssertCCCD: Equatable, Codable, Sendable {
     }
     
     
-    public func xml() -> XMLElement {
-        var attributes = [String: String]()
+    public func xml() -> MacroXMLElement {
+        var attributes = [MacroXMLAttribute]()
         
         if let description = description {
-            attributes[AssertCCCD.descriptionAttribute] = description
+            attributes.append(MacroXMLAttribute(name: AssertCCCD.descriptionAttribute, value: description))
         }
         
-        return XMLElement(
+        return MacroXMLElement(
             tag: AssertCCCD.name,
             attributes: attributes,
             children: []
         )
+    }
+}
+
+
+extension AssertCCCD: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return "(description: \(description ?? "nil"))"
     }
 }

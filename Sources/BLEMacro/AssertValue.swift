@@ -34,8 +34,8 @@ public struct AssertValue: Equatable, Codable, Sendable {
             case .failure(let error):
                 return .failure(.malformedValueAttribute(hexEncodingError: error))
                 
-            case .success(let (data, encoding)):
-                return .success(.init(description: description, value: .data(data: data, encoding: encoding)))
+            case .success(let (data, _)):
+                return .success(.init(description: description, value: .data(data: data)))
             }
         }
 
@@ -56,15 +56,22 @@ public struct AssertValue: Equatable, Codable, Sendable {
     }
 
 
-    public func xml() -> XMLElement {
-        var attributes = [String: String]()
+    public func xml() -> MacroXMLElement {
+        var attributes = [MacroXMLAttribute]()
         
         if let description = description {
-            attributes[AssertValue.descriptionAttribute] = description
+            attributes.append(MacroXMLAttribute(name: AssertValue.descriptionAttribute, value: description))
         }
         
-        value.addAttribute(to: &attributes)
+        attributes.append(value.xmlAttribute())
         
-        return XMLElement(tag: AssertValue.name, attributes: attributes, children: [])
+        return MacroXMLElement(tag: AssertValue.name, attributes: attributes, children: [])
+    }
+}
+
+
+extension AssertValue: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return "(description: \(description ?? "nil"), value: \(value.debugDescription))"
     }
 }

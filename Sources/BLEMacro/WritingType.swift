@@ -31,9 +31,21 @@ public struct WritingType: RawRepresentable, Hashable, Codable, Sendable {
             return .failure(.notSupportedType(element: xml.tag, type: typeString))
         }
     }
+    
+    
+    public func xmlAttribute() -> MacroXMLAttribute {
+        MacroXMLAttribute(name: WritingType.attribute, value: rawValue)
+    }
 }
 
 
 extension WritingType: CustomStringConvertible {
     public var description: String { rawValue }
+}
+
+
+extension WritingType: CaseIterable {
+    public static var allCases: [WritingType] {
+        [.writeRequest, .writeCommand]
+    }
 }

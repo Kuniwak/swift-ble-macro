@@ -26,4 +26,42 @@ public enum Operation: Equatable, Codable, Sendable {
             return .failure(.notSupportedOperation(element: xml.tag))
         }
     }
+    
+    
+    public func xml() -> MacroXMLElement {
+        switch self {
+        case .write(let write):
+            return write.xml()
+        case .writeDescriptor(let writeDescriptor):
+            return writeDescriptor.xml()
+        case .read(let read):
+            return read.xml()
+        case .sleep(let sleep):
+            return sleep.xml()
+        case .waitForNotification(let waitForNotification):
+            return waitForNotification.xml()
+        case .notSupported(let element):
+            return MacroXMLElement(tag: element, attributes: [], children: [])
+        }
+    }
+}
+
+
+extension Operation: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        switch self {
+        case .write(let write):
+            return write.debugDescription
+        case .writeDescriptor(let writeDescriptor):
+            return writeDescriptor.debugDescription
+        case .read(let read):
+            return read.debugDescription
+        case .sleep(let sleep):
+            return sleep.debugDescription
+        case .waitForNotification(let waitForNotification):
+            return waitForNotification.debugDescription
+        case .notSupported(let element):
+            return ".notSupported(element: \(element))"
+        }
+    }
 }

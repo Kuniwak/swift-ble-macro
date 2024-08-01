@@ -72,22 +72,29 @@ public struct WriteDescriptor: Equatable, Codable, Sendable {
     }
     
     
-    public func xml() -> XMLElement {
-        var attributes = [String: String]()
+    public func xml() -> MacroXMLElement {
+        var attributes = [MacroXMLAttribute]()
         
         if let description = description {
-            attributes[WriteDescriptor.descriptionAttribute] = description
+            attributes.append(MacroXMLAttribute(name: WriteDescriptor.descriptionAttribute, value: description))
         }
         
-        attributes[WriteDescriptor.descriptorUUIDAttribute] = uuid.uuidString
-        attributes[WriteDescriptor.serviceUUIDAttribute] = serviceUUID.uuidString
-        attributes[WriteDescriptor.characteristicUUIDAttribute] = characteristicUUID.uuidString
-        value.addAttribute(to: &attributes)
+        attributes.append(MacroXMLAttribute(name: WriteDescriptor.descriptorUUIDAttribute, value: uuid.uuidString))
+        attributes.append(MacroXMLAttribute(name: WriteDescriptor.serviceUUIDAttribute, value: serviceUUID.uuidString))
+        attributes.append(MacroXMLAttribute(name: WriteDescriptor.characteristicUUIDAttribute, value: characteristicUUID.uuidString))
+        attributes.append(value.xmlAttribute())
         
-        return XMLElement(
+        return MacroXMLElement(
             tag: WriteDescriptor.name,
             attributes: attributes,
             children: []
         )
+    }
+}
+
+
+extension WriteDescriptor: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return "(description: \(description ?? "nil"), uuid: \(uuid.uuidString), serviceUUID: \(serviceUUID.uuidString), characteristicUUID: \(characteristicUUID.uuidString), value: \(value.debugDescription))"
     }
 }

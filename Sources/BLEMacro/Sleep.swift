@@ -41,4 +41,28 @@ public struct Sleep: Equatable, Codable, Sendable {
             )
         )
     }
+    
+    
+    public func xml() -> MacroXMLElement {
+        var attributes = [MacroXMLAttribute]()
+        
+        if let description = description {
+            attributes.append(MacroXMLAttribute(name: Sleep.descriptionAttribute, value: description))
+        }
+        
+        attributes.append(MacroXMLAttribute(name: Sleep.timeoutAttribute, value: String(timeout)))
+        
+        return MacroXMLElement(
+            tag: Sleep.name,
+            attributes: attributes,
+            children: []
+        )
+    }
+}
+
+
+extension Sleep: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return "(description: \(description ?? "nil"), timeout: \(timeout))"
+    }
 }

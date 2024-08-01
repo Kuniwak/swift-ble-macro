@@ -6,6 +6,7 @@ public struct WaitForNotification: Equatable, Codable, Sendable {
     public let description: String?
     public let serviceUUID: UUID
     public let characteristicUUID: UUID
+    public let assertValue: AssertValue?
     
     
     public init (
@@ -17,6 +18,7 @@ public struct WaitForNotification: Equatable, Codable, Sendable {
         self.description = description
         self.serviceUUID = serviceUUID
         self.characteristicUUID = characteristicUUID
+        self.assertValue = assertValue
     }
     
     
@@ -55,5 +57,30 @@ public struct WaitForNotification: Equatable, Codable, Sendable {
                 assertValue: valueAsserts.first
             )
         }
+    }
+    
+    
+    public func xml() -> MacroXMLElement {
+        var attributes = [MacroXMLAttribute]()
+        
+        if let description = description {
+            attributes.append(MacroXMLAttribute(name: WaitForNotification.descriptionAttribute, value: description))
+        }
+        
+        attributes.append(MacroXMLAttribute(name: WaitForNotification.serviceUUIDAttribute, value: serviceUUID.uuidString))
+        attributes.append(MacroXMLAttribute(name: WaitForNotification.characteristicUUIDAttribute, value: characteristicUUID.uuidString))
+        
+        return MacroXMLElement(
+            tag: WaitForNotification.name,
+            attributes: attributes,
+            children: assertValue.map { [$0.xml()] } ?? []
+        )
+    }
+}
+
+
+extension WaitForNotification: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return "(description: \(description ?? "nil")), serviceUUID: \(serviceUUID.uuidString), characteristicUUID: \(characteristicUUID.uuidString), assertValue: \(assertValue?.debugDescription ?? "nil"))"
     }
 }

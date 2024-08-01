@@ -1,12 +1,30 @@
 {
   "pins" : [
     {
+      "identity" : "chalk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mxcl/Chalk.git",
+      "state" : {
+        "revision" : "a7f58e47a08ca5a84f73acc4bcf6c2c19d990609",
+        "version" : "0.5.0"
+      }
+    },
+    {
       "identity" : "core-bluetooth-testable",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Kuniwak/core-bluetooth-testable.git",
       "state" : {
         "revision" : "36e26fbaa93c81296876fd2f8249073805211f5a",
         "version" : "6.1.0"
+      }
+    },
+    {
+      "identity" : "filecheck",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/llvm-swift/FileCheck.git",
+      "state" : {
+        "revision" : "f7c5f1a9479b33a876a6f5632ca2b92a7ce4b667",
+        "version" : "0.2.6"
       }
     },
     {
@@ -28,6 +46,15 @@
       }
     },
     {
+      "identity" : "swift-argument-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-argument-parser",
+      "state" : {
+        "revision" : "41982a3656a71c768319979febd796c6fd111d5c",
+        "version" : "1.5.0"
+      }
+    },
+    {
       "identity" : "swift-ble-assigned-numbers",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Kuniwak/swift-ble-assigned-numbers.git",
@@ -43,6 +70,15 @@
       "state" : {
         "revision" : "109a9f7a47b40d8d82afa8a692472217c4da55a1",
         "version" : "2.0.0"
+      }
+    },
+    {
+      "identity" : "swiftcheck",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/typelift/SwiftCheck.git",
+      "state" : {
+        "revision" : "077c096c3ddfc38db223ac8e525ad16ffb987138",
+        "version" : "0.12.0"
       }
     }
   ],

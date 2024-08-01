@@ -87,17 +87,26 @@ public struct AssertCharacteristic: Equatable, Codable, Sendable {
     }
 
 
-    public func xml() -> XMLElement {
-        var attributes = [String: String]()
+    public func xml() -> MacroXMLElement {
+        var attributes = [MacroXMLAttribute]()
         
         if let description = description {
-            attributes[AssertCharacteristic.descriptionAttribute] = description
+            attributes.append(MacroXMLAttribute(name: AssertCharacteristic.descriptionAttribute, value: description))
         }
         
-        return XMLElement(
+        attributes.append(MacroXMLAttribute(name: AssertCharacteristic.uuidAttribute, value: uuid.uuidString))
+        
+        return MacroXMLElement(
             tag: AssertCharacteristic.name,
             attributes: attributes,
             children: properties.map { $0.xml() } + assertDescriptors.map { $0.xml() } + (assertCCCD != nil ? [assertCCCD!.xml()] : [])
         )
+    }
+}
+
+
+extension AssertCharacteristic: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return "(description: \(description ?? "nil"), uuid: \(uuid.uuidString), properties: [\(properties.map(\.debugDescription).joined(separator: ", "))], assertDescriptors: [\(assertDescriptors.map(\.debugDescription).joined(separator: ", "))], assertCCCD: \(assertCCCD?.debugDescription ?? "nil"))"
     }
 }

@@ -17,9 +17,9 @@ public struct PropertyRequirement: RawRepresentable, Equatable, Codable, Sendabl
     public static let attributeName = "requirement"
     
     
-    public static func parse(xml: Fuzi.XMLElement) -> Result<PropertyRequirement, MacroXMLError> {
+    public static func parse(xml: Fuzi.XMLElement) -> Result<PropertyRequirement?, MacroXMLError> {
         guard let rawValue = xml.attr(attributeName) else {
-            return .failure(.missingAttribute(element: xml.tag, attribute: attributeName))
+            return .success(nil)
         }
         
         switch rawValue {
@@ -32,5 +32,31 @@ public struct PropertyRequirement: RawRepresentable, Equatable, Codable, Sendabl
         default:
             return .failure(.notSupportedRequirement(value: rawValue))
         }
+    }
+    
+    
+    public func xmlAttribute() -> MacroXMLAttribute {
+        MacroXMLAttribute(name: PropertyRequirement.attributeName, value: rawValue)
+    }
+}
+
+
+extension PropertyRequirement: CustomStringConvertible {
+    public var description: String {
+        return rawValue
+    }
+}
+
+
+extension PropertyRequirement: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return rawValue
+    }
+}
+
+
+extension PropertyRequirement: CaseIterable {
+    public static var allCases: [PropertyRequirement] {
+        [.mandatory, .optional, .excluded]
     }
 }
