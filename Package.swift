@@ -55,9 +55,13 @@ let package = Package(
         .package(url: "https://github.com/Kuniwak/swift-ble-assigned-numbers.git", .upToNextMajor(from: "2.0.0")),
         .package(url: "https://github.com/Kuniwak/MirrorDiffKit.git", .upToNextMajor(from: "6.0.0")),
         .package(url: "https://github.com/cezheng/Fuzi.git", .upToNextMajor(from: "3.1.3")),
+        .package(url: "https://github.com/typelift/SwiftCheck.git", .upToNextMajor(from: "0.12.0")),
     ],
     targets: [
-        .target(name: "BLEInternal"),
+        .target(
+            name: "BLEInternal",
+            dependencies: []
+        ),
         .testTarget(
             name: "BLEInternalTests",
             dependencies: [
@@ -71,6 +75,13 @@ let package = Package(
             dependencies: [
                 .bleInternal,
                 .fuzi,
+            ]
+        ),
+        .target(
+            name: "BLEMacroStub",
+            dependencies: [
+                .bleMacro,
+                .swiftCheck,
             ]
         ),
         .target(
@@ -129,8 +140,10 @@ let package = Package(
             dependencies: [
                 .bleInternal,
                 .bleMacro,
-                .mirrorDiffKit,
+                .bleMacroStub,
                 .bleAssignedNumbers,
+                .mirrorDiffKit,
+                .swiftCheck,
             ],
             resources: [
                 .copy("Fixtures"),
@@ -155,6 +168,7 @@ let package = Package(
 private extension Target.Dependency {
     static let bleInternal: Self = "BLEInternal"
     static let bleMacro: Self = "BLEMacro"
+    static let bleMacroStub: Self = "BLEMacroStub"
     static let bleMacroCompiler: Self = "BLEMacroCompiler"
     static let bleCommand: Self = "BLECommand"
     static let bleInterpreter: Self = "BLEInterpreter"
@@ -166,4 +180,5 @@ private extension Target.Dependency {
     static let coreBluetoothTestable: Self = .product(name: "CoreBluetoothTestable", package: "core-bluetooth-testable")
     static let coreBluetoothStub: Self = .product(name: "CoreBluetoothStub", package: "core-bluetooth-testable")
     static let bleAssignedNumbers: Self = .product(name: "BLEAssignedNumbers", package: "swift-ble-assigned-numbers")
+    static let swiftCheck: Self = "SwiftCheck"
 }

@@ -36,19 +36,31 @@ public struct Property: Equatable, Codable, Sendable {
     }
     
     
-    public func xml() -> XMLElement {
-        var attributes = [String: String]()
+    public func xml() -> MacroXMLElement {
+        var attributes = [MacroXMLAttribute]()
         
-        attributes[Property.nameAttribute] = name.rawValue
+        attributes.append(name.xmlAttribute())
         
         if let requirement = requirement {
-            attributes[Property.requirementAttribute] = requirement.rawValue
+            attributes.append(requirement.xmlAttribute())
         }
         
-        return XMLElement(
+        return MacroXMLElement(
             tag: Property.name,
             attributes: attributes,
             children: []
         )
     }
+}
+
+
+extension Property: CustomStringConvertible {
+    public var description: String {
+        return "(name: \(name), requirement: \(requirement?.debugDescription ?? "nil"))"
+    }
+}
+
+
+extension Property: CustomDebugStringConvertible {
+    public var debugDescription: String { description }
 }

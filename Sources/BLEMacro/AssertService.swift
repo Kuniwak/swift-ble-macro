@@ -52,15 +52,22 @@ public struct AssertService: Equatable, Codable, Sendable {
     }
 
 
-    public func xml() -> XMLElement {
-        var attributes = [String: String]()
+    public func xml() -> MacroXMLElement {
+        var attributes = [MacroXMLAttribute]()
         
         if let description = description {
-            attributes[AssertService.descriptionAttribute] = description
+            attributes.append(MacroXMLAttribute(name: AssertService.descriptionAttribute, value: description))
         }
         
-        attributes[AssertService.uuidAttribute] = uuid.uuidString
+        attributes.append(MacroXMLAttribute(name: AssertService.uuidAttribute, value: uuid.uuidString))
         
-        return XMLElement(tag: AssertService.name, attributes: attributes, children: assertCharacteristics.map { $0.xml() })
+        return MacroXMLElement(tag: AssertService.name, attributes: attributes, children: assertCharacteristics.map { $0.xml() })
+    }
+}
+
+
+extension AssertService: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return "(description: \(description ?? "nil"), uuid: \(uuid.uuidString), assertCharacteristics: [\(assertCharacteristics.map(\.debugDescription).joined(separator: ", "))])"
     }
 }

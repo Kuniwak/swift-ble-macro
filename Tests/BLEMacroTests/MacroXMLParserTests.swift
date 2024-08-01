@@ -46,17 +46,14 @@ final class MacroXMLParserTests: XCTestCase {
                         uuid: AssignedNumbers.Descriptors.clientCharacteristicConfiguration.uuid(),
                         serviceUUID: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
                         characteristicUUID: UUID(uuidString: "22222222-2222-2222-2222-222222222222")!,
-                        value: .data(
-                            data: Data([UInt8(0x01), UInt8(0x00)]),
-                            encoding: .lower
-                        )
+                        value: .data(data: Data([UInt8(0x01), UInt8(0x00)]))
                     )),
                     .write(.init(
                         description: "Write 0x1234",
                         serviceUUID: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
                         characteristicUUID: UUID(uuidString: "11111111-1111-1111-1111-111111111111")!,
                         type: .writeRequest,
-                        value: .data(data: Data([0x12, 0x34]), encoding: .lower)
+                        value: .data(data: Data([0x12, 0x34]))
                     )),
                     .waitForNotification(.init(
                         description: "Wait for Notification",

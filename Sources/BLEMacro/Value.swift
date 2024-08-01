@@ -6,20 +6,20 @@ import BLEInternal
 public enum Value: Equatable, Codable, Sendable {
     typealias RawValue = String
 
-    case data(data: Data, encoding: HexEncoding)
+    case data(data: Data)
     case string(String)
 
 
     public static let valueAttributeName = "value"
     public static let valueStringAttributeName = "value-string"
 
-
-    public func addAttribute(to attributes: inout [String: String]) {
+    
+    public var data: Data {
         switch self {
-        case .data(let data, let encoding):
-            attributes[Value.valueAttributeName] = encoding.encode(data: data)
+        case .data(let data):
+            return data
         case .string(let string):
-            attributes[Value.valueStringAttributeName] = string
+            return Data(string.utf8)
         }
     }
 
@@ -32,8 +32,8 @@ public enum Value: Equatable, Codable, Sendable {
             switch HexEncoding.decode(hexString: value) {
             case .failure(let error):
                 return .failure(.malformedValueAttribute(hexEncodingError: error))
-            case .success(let (data, encoding)):
-                return .success(.data(data: data, encoding: encoding))
+            case .success(let (data, _)):
+                return .success(.data(data: data))
             }
         } else if let valueString = xml.attr(valueStringAttributeName) {
             return .success(.string(valueString))
@@ -41,14 +41,26 @@ public enum Value: Equatable, Codable, Sendable {
             return .failure(.missingValueOrValueStringAttribute(name: xml.tag))
         }
     }
+
     
-    
-    public var data: Data {
+    public func xmlAttribute() -> MacroXMLAttribute {
         switch self {
-        case .data(let data, _):
-            return data
+        case .data(let data):
+            return MacroXMLAttribute(name: Value.valueAttributeName, value: HexEncoding.upper.encode(data: data))
         case .string(let string):
-            return Data(string.utf8)
+            return MacroXMLAttribute(name: Value.valueStringAttributeName, value: string)
+        }
+    }
+}
+
+
+extension Value: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        switch self {
+        case .data(let data):
+            return "(data: \(data.debugDescription))"
+        case .string(let string):
+            return "(string: \(string))"
         }
     }
 }

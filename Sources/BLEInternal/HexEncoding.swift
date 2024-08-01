@@ -30,3 +30,20 @@ public enum HexEncoding: String, Equatable, Codable, Sendable {
         return .success((data: data, encoding: encoding))
     }
 }
+
+
+extension HexEncoding: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .upper:
+            return "upper"
+        case .lower:
+            return "lower"
+        }
+    }
+}
+
+
+extension HexEncoding: CustomDebugStringConvertible {
+    public var debugDescription: String { description }
+}

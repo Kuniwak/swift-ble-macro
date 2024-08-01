@@ -69,4 +69,31 @@ public struct Write: Equatable, Codable, Sendable {
             ))
         }
     }
+    
+    
+    public func xml() -> MacroXMLElement {
+        var attributes = [MacroXMLAttribute]()
+        
+        if let description = description {
+            attributes.append(MacroXMLAttribute(name: Write.descriptionAttribute, value: description))
+        }
+        
+        attributes.append(MacroXMLAttribute(name: Write.serviceUUIDAttribute, value: serviceUUID.uuidString))
+        attributes.append(MacroXMLAttribute(name: Write.characteristicUUIDAttribute, value: characteristicUUID.uuidString))
+        attributes.append(type.xmlAttribute())
+        attributes.append(value.xmlAttribute())
+        
+        return MacroXMLElement(
+            tag: Write.name,
+            attributes: attributes,
+            children: []
+        )
+    }
+}
+
+
+extension Write: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return "(description: \(description ?? "nil"), serviceUUID: \(serviceUUID.uuidString), characteristicUUID: \(characteristicUUID.uuidString), type: \(type), value: \(value.debugDescription))"
+    }
 }

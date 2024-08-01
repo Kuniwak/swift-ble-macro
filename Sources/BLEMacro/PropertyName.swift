@@ -49,4 +49,39 @@ public struct PropertyName: RawRepresentable, Hashable, Codable, Sendable {
             return .failure(.notSupportedProperty(name: rawValue))
         }
     }
+    
+    
+    public func xmlAttribute() -> MacroXMLAttribute {
+        MacroXMLAttribute(name: PropertyName.attributeName, value: rawValue)
+    }
+}
+
+
+extension PropertyName: CustomStringConvertible {
+    public var description: String {
+        return rawValue
+    }
+}
+
+
+extension PropertyName: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return rawValue
+    }
+}
+
+
+extension PropertyName: CaseIterable {
+    public static var allCases: [PropertyName] {
+        [
+            .broadcast,
+            .read,
+            .write,
+            .writeWithoutResponse,
+            .notify,
+            .indicate,
+            .signedWrite,
+            .extendedProperties
+        ]
+    }
 }

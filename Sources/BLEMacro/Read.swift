@@ -62,22 +62,29 @@ public struct Read: Equatable, Codable, Sendable {
     }
     
     
-    public func xml() -> XMLElement {
-        var attributes = [String: String]()
+    public func xml() -> MacroXMLElement {
+        var attributes = [MacroXMLAttribute]()
         
         if let description = description {
-            attributes[Read.descriptionAttribute] = description
+            attributes.append(MacroXMLAttribute(name: Read.descriptionAttribute, value: description))
         }
         
-        attributes[Read.serviceUUIDAttribute] = serviceUUID.uuidString
-        attributes[Read.characteristicUUIDAttribute] = characteristicUUID.uuidString
+        attributes.append(MacroXMLAttribute(name: Read.serviceUUIDAttribute, value: serviceUUID.uuidString))
+        attributes.append(MacroXMLAttribute(name: Read.characteristicUUIDAttribute, value: characteristicUUID.uuidString))
         
         let children = assertValue.map { [$0.xml()] } ?? []
         
-        return XMLElement(
+        return MacroXMLElement(
             tag: Read.name,
             attributes: attributes,
             children: children
         )
+    }
+}
+
+
+extension Read: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return "(description: \(description ?? "nil"), serviceUUID: \(serviceUUID.uuidString), characteristicUUID: \(characteristicUUID.uuidString), assertValue: \(assertValue.map(\.debugDescription) ?? "nil"))"
     }
 }

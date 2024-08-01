@@ -29,11 +29,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Setup Swift
-        uses: swift-actions/setup-swift@e1dca7c4a36344146bbc2803f0d538462477bb37 # v2.0.0
-        with:
-          swift-version: '5.10'
-
       - uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: .build
@@ -47,6 +42,8 @@ jobs:
       - name: Run tests
         run: |
           make "test-${{ matrix.os }}"
+        env:
+          DEVELOPER_DIR: /Applications/Xcode_16_beta_4.app
 
       - name: Upload Logs
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3

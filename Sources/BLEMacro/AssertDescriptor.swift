@@ -44,19 +44,26 @@ public struct AssertDescriptor: Equatable, Codable, Sendable {
     }
     
     
-    public func xml() -> XMLElement {
-        var attributes = [String: String]()
+    public func xml() -> MacroXMLElement {
+        var attributes = [MacroXMLAttribute]()
         
         if let description = description {
-            attributes[AssertDescriptor.descriptionAttribute] = description
+            attributes.append(MacroXMLAttribute(name: AssertDescriptor.descriptionAttribute, value: description))
         }
         
-        attributes[AssertDescriptor.uuidAttribute] = uuid.uuidString
+        attributes.append(MacroXMLAttribute(name: AssertDescriptor.uuidAttribute, value: uuid.uuidString))
         
-        return XMLElement(
+        return MacroXMLElement(
             tag: AssertDescriptor.name,
             attributes: attributes,
             children: []
         )
+    }
+}
+
+
+extension AssertDescriptor: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return "(description: \(description ?? "nil"), uuid: \(uuid.uuidString))"
     }
 }
